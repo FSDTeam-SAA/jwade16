@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
+import { useRouter } from "next/navigation";
 
 interface Question {
   id: string;
@@ -12,8 +13,10 @@ interface Question {
 }
 
 export default function QuestionnairePage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const { currentStep, setCurrentStep, setAnswer, answers, email, setEmail } =
+    useQuestionnaireStore();
+
+  const router = useRouter();
 
   const questions: Question[] = [
     {
@@ -120,36 +123,48 @@ export default function QuestionnairePage() {
     },
   ];
 
-  const q = questions[currentStep];
-  const progress = ((currentStep + 1) / questions.length) * 100;
-
   const handleSelect = (value: string) => {
-    setAnswers({ ...answers, [q.id]: value });
-
-    if (currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+    const currentQ = questions[currentStep];
+    if (currentQ) setAnswer(currentQ.id, value);
+    if (currentStep < questions.length) setCurrentStep(currentStep + 1);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-2xl mx-auto pt-10 pb-20">
-        {/* STEP INDICATOR - PREMIUM MINIMAL STYLE */}
-        {/* --------------------------------------- */}
+  const handleEmailSubmit = () => {
+    if (!email.trim()) return;
 
-        <div className="relative mb-16">
-          {/* TOP TITLE + DESCRIPTION */}
+    // 1️⃣ Log the current store data
+    console.log("All ZUSTAND STORE DATA:", { answers, email });
+
+    // 2️⃣ Navigate to /score
+    router.push(`/score?email=${email}`);
+  };
+
+  if (currentStep === questions.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4">
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          <div
+            className="absolute w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 
+          bg-[#005DAA] rounded-full blur-3xl -top-10 -left-10"
+          ></div>
+
+          <div
+            className="absolute w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 
+          bg-[#00C8B3] rounded-full blur-3xl bottom-0 right-0"
+          ></div>
+        </div>
+        <div className="max-w-xl mx-auto pt-12 pb-20">
+          {/* BRAND, TITLE & DESCRIPTION */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-10"
+            className="text-center mb-12"
           >
-            <span className="inline-block bg-indigo-600 text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md tracking-wide mb-4">
+            <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xl sm:text-2xl shadow-md tracking-wide mb-6">
               COMPanion
             </span>
-
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-3">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
               Your Pay Power Assessment
             </h2>
             <p className="text-gray-700 text-base md:text-lg max-w-xl mx-auto">
@@ -158,60 +173,126 @@ export default function QuestionnairePage() {
             </p>
           </motion.div>
 
-          {/* --------------------------------------- */}
-          {/* STEP ICONS */}
-          {/* --------------------------------------- */}
-          <div className="flex justify-between relative">
-            {questions.map((_, index) => {
-              const isCompleted = index < currentStep;
-              const isActive = index === currentStep;
+          {/* EMAIL INPUT CARD */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="bg-white rounded-3xl shadow-2xl p-10"
+          >
+            <div className="space-y-5">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleEmailSubmit()}
+                placeholder="your.email@company.com"
+                className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-[#00C8B3] focus:ring-1 focus:ring-[#00C8B3]/80 outline-none transition"
+              />
+              <button
+                onClick={handleEmailSubmit}
+                disabled={!email.trim()}
+                className={`w-full py-4 rounded-2xl font-semibold transition  
+                  ${
+                    !email.trim()
+                      ? "w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md cursor-not-allowed"
+                      : "w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                  }
+                `}
+              >
+                Show My Score
+              </button>
+            </div>
 
-              return (
-                <div
-                  key={index}
-                  className="flex flex-col items-center w-full select-none"
+            <p className="text-xs text-gray-400 text-center mt-4">
+              We respect your privacy. Unsubscribe anytime.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  const q = questions[currentStep];
+  const progress = ((currentStep + 1) / questions.length) * 100;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4">
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div
+          className="absolute w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 
+          bg-[#005DAA] rounded-full blur-3xl -top-10 -left-10"
+        ></div>
+
+        <div
+          className="absolute w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 
+          bg-[#00C8B3] rounded-full blur-3xl bottom-0 right-0"
+        ></div>
+      </div>
+      <div className="max-w-2xl mx-auto pt-12 pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xl sm:text-2xl shadow-md tracking-wide mb-6">
+            COMPanion
+          </span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
+            Your Pay Power Assessment
+          </h2>
+          <p className="text-gray-700 text-base md:text-lg max-w-xl mx-auto">
+            Answer a few quick questions to calculate your personalized Pay
+            Power Score.
+          </p>
+        </motion.div>
+
+        {/* STEP ICONS */}
+        <div className="flex justify-between relative mb-14">
+          {questions.map((_, index) => {
+            const isCompleted = index < currentStep;
+            const isActive = index === currentStep;
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col items-center w-full select-none"
+              >
+                <motion.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{
+                    scale: isActive ? 1.3 : 1,
+                    opacity: 1,
+                    boxShadow: isActive
+                      ? "0 0 20px rgba(99,102,241,0.45)"
+                      : isCompleted
+                        ? "0 0 12px rgba(99,102,241,0.25)"
+                        : "none",
+                  }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className={`
+                    w-12 h-12 flex items-center justify-center rounded-full text-sm font-semibold border-2
+                    ${
+                      isActive || isCompleted
+                        ? "bg-[#00C8B3] text-white border-[#FFF]"
+                        : "bg-white text-gray-500 border-gray-300"
+                    }
+                  `}
                 >
-                  {/* Step Circle */}
-                  <motion.div
-                    initial={{ scale: 0.7, opacity: 0 }}
-                    animate={{
-                      scale: isActive ? 1.25 : 1,
-                      opacity: 1,
-                      boxShadow: isActive
-                        ? "0 0 20px rgba(99,102,241,0.45)"
-                        : isCompleted
-                          ? "0 0 10px rgba(99,102,241,0.25)"
-                          : "none",
-                    }}
-                    transition={{ duration: 0.35, ease: "easeOut" }}
-                    className={`
-              w-12 h-12 flex items-center justify-center rounded-full text-sm font-semibold 
-              transition-all duration-300 border-2
-              ${
-                isActive
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : isCompleted
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-600 border-gray-300"
-              }
-            `}
-                  >
-                    {isCompleted ? <Check size={20} /> : index + 1}
-                  </motion.div>
-
-                  {/* Step Label */}
-                  <motion.p
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="mt-3 text-xs font-medium text-gray-600"
-                  >
-                    Step {index + 1}
-                  </motion.p>
-                </div>
-              );
-            })}
-          </div>
+                  {isCompleted ? <Check size={20} /> : index + 1}
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="mt-3 text-xs font-medium text-gray-600"
+                >
+                  Step {index + 1}
+                </motion.p>
+              </div>
+            );
+          })}
         </div>
 
         {/* PROGRESS BAR */}
@@ -224,7 +305,7 @@ export default function QuestionnairePage() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <motion.div
-              className="bg-indigo-600 h-2 rounded-full"
+              className="bg-gradient-to-r from-[#005DAA] to-[#00C8B3] h-2 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.4 }}
@@ -238,21 +319,20 @@ export default function QuestionnairePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          className="bg-white rounded-3xl shadow-2xl p-10"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             {q.question}
           </h2>
-
-          <div className="space-y-3">
+          <div className="space-y-4">
             {q.options.map((option) => (
               <motion.button
                 key={option}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleSelect(option)}
-                className="w-full text-left p-4 border-2 border-gray-200 rounded-xl
-                hover:border-indigo-600 hover:bg-indigo-50 transition duration-200
-                font-medium text-gray-800 cursor-pointer"
+                className="w-full text-left p-4 border-2 border-gray-200 rounded-2xl
+                  hover:border-[#005DAA] hover:bg-[#005DAA]/10 transition duration-200
+                  font-medium text-gray-800 cursor-pointer"
               >
                 {option}
               </motion.button>
@@ -264,13 +344,8 @@ export default function QuestionnairePage() {
         {currentStep > 0 && (
           <button
             onClick={() => setCurrentStep(currentStep - 1)}
-            className="
-      mt-6 inline-flex items-center gap-2 px-4 py-2
-      rounded-xl border border-indigo-600
-      text-gray-700 font-medium
-      hover:bg-indigo-600 hover:text-white hover:border-indigo-600
-      transition-all duration-200 cursor-pointer
-    "
+            className="mt-6 inline-flex items-center gap-2 px-5 py-2 rounded-2xl border border-[#005DAA]
+              text-gray-700 font-medium hover:bg-[#005DAA] hover:text-white transition-all duration-200 cursor-pointer"
           >
             ← Back
           </button>
