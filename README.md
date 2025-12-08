@@ -75,6 +75,6 @@ git add .husky/pre-commit
 
 Rashedul Haque Rasel
 Built with ❤️ using Next.js, TypeScript, and Tailwind CSS.
-📧 [rashedulhaquerasel1@gmail.com](rashedulhaquerasel1@gmail.com)
 
+📧 [rashedulhaquerasel1@gmail.com](rashedulhaquerasel1@gmail.com)
 🌐 [Protfolio](https://rashedul-haque-rasel.vercel.app)
