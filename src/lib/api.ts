@@ -7,13 +7,36 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Get reviews all with pagination and dynamic params
-export async function getAllReview(page = 1, limit = 10) {
+// get all role
+export async function getAllRole() {
   try {
-    const res = await api.get(`/reviews/all?page=${page}&limit=${limit}`);
+    const res = await api.get(`/occupations/titles`);
     return res.data;
   } catch (err) {
-    console.error("Error fetching reviewss:", err);
-    throw new Error("Failed to fetch all reviews with pagination");
+    console.error("Error fetching roles:", err);
+    throw new Error("Failed to fetch all roles");
+  }
+}
+
+// post pay-power
+export interface PayPowerPayload {
+  currentRole: string;
+  experience: string;
+  location: string;
+  compensation: string;
+  lastRaise: string;
+  negotiateCurrentSalary: string;
+  discussTime: string;
+  howConfident: string;
+  email: string;
+}
+
+export async function postPayPower(data: PayPowerPayload) {
+  try {
+    const res = await api.post(`/user-selection/pay-power`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    throw new Error("Failed to fetch all roles");
   }
 }
