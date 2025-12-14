@@ -21,7 +21,13 @@ function ScoreContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamEmail = searchParams.get("email");
-  const { email: storeEmail, setEmail } = useQuestionnaireStore();
+  const {
+    email: storeEmail,
+    setEmail,
+    payPowerScore,
+    marketGapDetected,
+    answers,
+  } = useQuestionnaireStore();
 
   const email = searchParamEmail || storeEmail;
 
@@ -37,10 +43,44 @@ function ScoreContent() {
       setEmail(searchParamEmail);
     }
   }, [storeEmail, searchParamEmail, router, searchParams, setEmail]);
-  // Mock/fake data
-  const score = 78;
-  const belowMarket = 20;
-  const moneyLeft = 15;
+
+  // Use store data or fallback to 0/empty
+  const score = payPowerScore ?? 0;
+
+  // Extract percentage from string like "27% Below Market" if possible
+  // If undefined/null, default to 0
+  let belowMarket = 0;
+  if (marketGapDetected) {
+    const match = marketGapDetected.match(/(\d+)%/);
+    if (match && match[1]) {
+      belowMarket = parseInt(match[1], 10);
+    }
+  }
+
+  // Calculate moneyLeft based on currentPay and belowMarket percentage
+  let estimatedSalary = 75000; // Default fallback
+  const currentPay = answers.currentPay;
+
+  if (currentPay) {
+    if (currentPay === "Under $50k") estimatedSalary = 40000;
+    else if (currentPay === "$50k-$75k") estimatedSalary = 62500;
+    else if (currentPay === "$75k-$100k") estimatedSalary = 87500;
+    else if (currentPay === "$100k-$150k") estimatedSalary = 125000;
+    else if (currentPay === "$150k-$200k") estimatedSalary = 175000;
+    else if (currentPay === "$200k-$300k") estimatedSalary = 250000;
+    else if (currentPay === "$300k+") estimatedSalary = 350000;
+  }
+
+  // Formula: Gap = Salary * (Percentage / (100 - Percentage))
+  // If belowMarket is 20%, Salary is 80% of Market. Market = Salary / 0.8. Gap = Market - Salary = Salary/0.8 - Salary = Salary * (1/0.8 - 1) = Salary * 0.25.
+  // Wait, let's stick to the simpler interpretation: X% below market means Gap is X% of Market Rate.
+  // Market = Salary / ((100 - belowMarket) / 100)
+  // Gap = Market - Salary
+  let moneyLeft = 0;
+  if (belowMarket > 0) {
+    const marketRate = estimatedSalary / ((100 - belowMarket) / 100);
+    moneyLeft = Math.round((marketRate - estimatedSalary) / 1000); // In thousands (k)
+  }
 
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -174,34 +214,64 @@ function ScoreContent() {
           </div>
 
           {/* Below Market Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="bg-red-50/50 border border-red-100 rounded-2xl p-6 mb-10 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <TrendingUp className="w-24 h-24 text-red-600" />
-            </div>
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-10 text-center sm:text-left">
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-red-100">
-                <TrendingUp className="w-8 h-8 text-red-500" />
+          {belowMarket > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-red-50/50 border border-red-100 rounded-2xl p-6 mb-10 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <TrendingUp className="w-24 h-24 text-red-600" />
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-xl mb-2">
-                  Market Gap Detected: {belowMarket}% Below Market
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Based on your role and location, you are currently
-                  undercompensated by approximately{" "}
-                  <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
-                    ${moneyLeft}k per year
-                  </span>
-                  .
-                </p>
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-10 text-center sm:text-left">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-red-100">
+                  <TrendingUp className="w-8 h-8 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-xl mb-2">
+                    Market Gap Detected: {belowMarket}% Below Market
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Based on your role and location, you are currently
+                    undercompensated by approximately{" "}
+                    <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
+                      ${moneyLeft}k per year
+                    </span>
+                    .
+                  </p>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6 mb-10 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <CheckCircle className="w-24 h-24 text-emerald-600" />
+              </div>
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-10 text-center sm:text-left">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100">
+                  <CheckCircle className="w-8 h-8 text-emerald-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-xl mb-2">
+                    Competitive Compensation Detected
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Great news! Your compensation appears to be{" "}
+                    <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      at or above market rates
+                    </span>{" "}
+                    for your role and location.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Features Grid */}
           <motion.div

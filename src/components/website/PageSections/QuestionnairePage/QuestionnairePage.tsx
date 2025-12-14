@@ -1,9 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { useRouter } from "next/navigation";
+import { useGetRole } from "@/lib/hooks/useRole";
+import { usePostPayPower } from "@/lib/hooks/usePayPower";
+import { useState } from "react";
 
 interface Question {
   id: string;
@@ -13,10 +16,19 @@ interface Question {
 }
 
 export default function QuestionnairePage() {
-  const { currentStep, setCurrentStep, setAnswer, answers, email, setEmail } =
-    useQuestionnaireStore();
+  const {
+    currentStep,
+    setCurrentStep,
+    setAnswer,
+    answers,
+    email,
+    setEmail,
+    setScoreResults,
+  } = useQuestionnaireStore();
 
   const router = useRouter();
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const questions: Question[] = [
     {
@@ -54,10 +66,14 @@ export default function QuestionnairePage() {
       type: "select",
       options: [
         "Major Tech Hub (SF, NYC, Seattle)",
-        "Large City",
-        "Mid-size City",
-        "Small City/Rural",
-        "Remote",
+        "Large City (LA, Chicago, Houston, Phoenix, Philadelphia)",
+        "Upper Mid-size City (San Diego, Dallas, San Jose, San Antonio, San Francisco)",
+        "Mid-size City (Denver, Boston, Atlanta, Miami, Orlando, Tampa)",
+        "Growing Tech City (Austin, Raleigh, Durham, Boulder, Salt Lake City)",
+        "College Town (Berkeley, Palo Alto, Cambridge, Ann Arbor, Madison)",
+        "Small City (Boise, Reno, Spokane, Santa Fe, Flagstaff)",
+        "Rural Area / Small Town",
+        "Remote (Anywhere in the US)",
       ],
     },
     {
@@ -126,17 +142,53 @@ export default function QuestionnairePage() {
   const handleSelect = (value: string) => {
     const currentQ = questions[currentStep];
     if (currentQ) setAnswer(currentQ.id, value);
-    if (currentStep < questions.length) setCurrentStep(currentStep + 1);
+    if (currentStep < questions.length) {
+      setCurrentStep(currentStep + 1);
+      setSearchTerm("");
+    }
   };
 
-  const handleEmailSubmit = () => {
+  const { data: roleData, isLoading: roleLoading } = useGetRole();
+  const { mutateAsync: postPayPower, isPending: isSubmitting } =
+    usePostPayPower();
+
+  console.log(roleData);
+
+  const handleEmailSubmit = async () => {
     if (!email.trim()) return;
 
-    // 1️⃣ Log the current store data
-    console.log("All ZUSTAND STORE DATA:", { answers, email });
+    const payload = {
+      currentRole: answers.role,
+      experience: answers.experience,
+      location: answers.location,
+      compensation: answers.currentPay,
+      lastRaise: answers.lastRaise,
+      negotiateCurrentSalary: answers.negotiated,
+      discussTime: answers.askFrequency,
+      howConfident: answers.marketAwareness,
+      email: email,
+    };
 
-    // 2️⃣ Navigate to /score
-    router.push(`/score?email=${email}`);
+    try {
+      // post pay power
+      const response = await postPayPower(payload);
+
+      if (response && response.success && response.data) {
+        setScoreResults(
+          response.data.payPowerScore,
+          response.data.marketGapDetected
+        );
+      }
+
+      // 1️⃣ Log the current store data
+      console.log("All ZUSTAND STORE DATA:", { answers, email, response });
+
+      // 2️⃣ Navigate to /score
+      router.push(`/score`);
+    } catch (error) {
+      console.error("Failed to submit:", error);
+      // Optional: Show error toast here
+    }
   };
 
   if (currentStep === questions.length) {
@@ -191,16 +243,16 @@ export default function QuestionnairePage() {
               />
               <button
                 onClick={handleEmailSubmit}
-                disabled={!email.trim()}
+                disabled={!email.trim() || isSubmitting}
                 className={`w-full py-4 rounded-2xl font-semibold transition  
                   ${
-                    !email.trim()
-                      ? "w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md cursor-not-allowed"
+                    !email.trim() || isSubmitting
+                      ? "w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md cursor-not-allowed opacity-70"
                       : "w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   }
                 `}
               >
-                Show My Score
+                {isSubmitting ? "Processing..." : "Show My Score"}
               </button>
             </div>
 
@@ -215,6 +267,26 @@ export default function QuestionnairePage() {
 
   const q = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
+
+  // Logic to determine which options to show
+  let displayedOptions = q.options;
+
+  if (q.id === "role") {
+    // If we have fetched roles, use them. Otherwise fallback to default options.
+    const sourceOptions =
+      roleData?.data && Array.isArray(roleData.data)
+        ? roleData.data
+        : q.options;
+
+    // Filter based on search term
+    if (searchTerm.trim()) {
+      displayedOptions = sourceOptions.filter((opt: string) =>
+        opt.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } else {
+      displayedOptions = sourceOptions;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4">
@@ -324,19 +396,44 @@ export default function QuestionnairePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             {q.question}
           </h2>
-          <div className="space-y-4">
-            {q.options.map((option) => (
-              <motion.button
-                key={option}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleSelect(option)}
-                className="w-full text-left p-4 border-2 border-gray-200 rounded-2xl
+
+          {/* SEARCH BAR FOR ROLE */}
+          {q.id === "role" && (
+            <div className="mb-4 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search for your role..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-left p-3 pl-10 border-2 border-gray-200 rounded-xl
+                  focus:border-[#005DAA] focus:ring-1 focus:ring-[#005DAA]/50 outline-none
+                  transition duration-200 font-medium text-gray-800"
+              />
+            </div>
+          )}
+
+          <div
+            className={`space-y-4 ${q.id === "role" ? "max-h-96 overflow-y-auto custom-scrollbar pr-2 " : ""}`}
+          >
+            {q.id === "role" && roleLoading ? (
+              <div className="text-gray-500 italic">Loading roles...</div>
+            ) : displayedOptions.length > 0 ? (
+              displayedOptions.map((option) => (
+                <motion.button
+                  key={option}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleSelect(option)}
+                  className="w-full text-left p-4 border-2 border-gray-200 rounded-2xl
                   hover:border-[#005DAA] hover:bg-[#005DAA]/10 transition duration-200
                   font-medium text-gray-800 cursor-pointer"
-              >
-                {option}
-              </motion.button>
-            ))}
+                >
+                  {option}
+                </motion.button>
+              ))
+            ) : (
+              <div className="text-gray-500 italic">No role found.</div>
+            )}
           </div>
         </motion.div>
 
