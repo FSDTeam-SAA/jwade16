@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
+import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
+import Link from "next/link";
 
 function ScoreContent() {
   const router = useRouter();
@@ -27,7 +29,11 @@ function ScoreContent() {
     payPowerScore,
     marketGapDetected,
     answers,
+    userSelectionId,
   } = useQuestionnaireStore();
+  const checkoutMutation = usePostCheckoutSession();
+
+  console.log(payPowerScore);
 
   const email = searchParamEmail || storeEmail;
 
@@ -58,7 +64,7 @@ function ScoreContent() {
   }
 
   // Calculate moneyLeft based on currentPay and belowMarket percentage
-  let estimatedSalary = 75000; // Default fallback
+  let estimatedSalary = 10; // Default fallback
   const currentPay = answers.currentPay;
 
   if (currentPay) {
@@ -71,11 +77,6 @@ function ScoreContent() {
     else if (currentPay === "$300k+") estimatedSalary = 350000;
   }
 
-  // Formula: Gap = Salary * (Percentage / (100 - Percentage))
-  // If belowMarket is 20%, Salary is 80% of Market. Market = Salary / 0.8. Gap = Market - Salary = Salary/0.8 - Salary = Salary * (1/0.8 - 1) = Salary * 0.25.
-  // Wait, let's stick to the simpler interpretation: X% below market means Gap is X% of Market Rate.
-  // Market = Salary / ((100 - belowMarket) / 100)
-  // Gap = Market - Salary
   let moneyLeft = 0;
   if (belowMarket > 0) {
     const marketRate = estimatedSalary / ((100 - belowMarket) / 100);
@@ -97,9 +98,45 @@ function ScoreContent() {
     }, 1000);
   };
 
-  const setStage = (stage: string) => {
-    alert(
-      `Stripe payment integration coming soon! This will process payment and unlock the full report. ${stage}`
+  const handleFullReport = () => {
+    checkoutMutation.mutate(
+      {
+        userId: userSelectionId,
+        totalAmount: 39,
+        paymentType: "fullReport",
+      },
+      {
+        onSuccess: (data) => {
+          if (data?.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          }
+        },
+        onError: (error) => {
+          toast.error("Failed to create checkout session");
+          console.error("Checkout error:", error);
+        },
+      }
+    );
+  };
+
+  const handleSession = () => {
+    checkoutMutation.mutate(
+      {
+        userId: userSelectionId,
+        totalAmount: 197,
+        paymentType: "bookSeason",
+      },
+      {
+        onSuccess: (data) => {
+          if (data?.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          }
+        },
+        onError: (error) => {
+          toast.error("Failed to create checkout session");
+          console.error("Checkout error:", error);
+        },
+      }
     );
   };
 
@@ -125,9 +162,11 @@ function ScoreContent() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xl sm:text-2xl shadow-md tracking-wide">
-            COMPanion
-          </span>
+          <Link href="/">
+            <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
+              COMPanion
+            </span>
+          </Link>
         </motion.div>
 
         {/* Score Card */}
@@ -334,7 +373,7 @@ function ScoreContent() {
             className="grid md:grid-cols-2 gap-4"
           >
             <button
-              onClick={() => setStage("fullReport")}
+              onClick={handleFullReport}
               className="relative group overflow-hidden bg-[#005DAA] text-white p-1 rounded-xl cursor-pointer shadow-lg hover:shadow-xl transition-all"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#005DAA] to-[#0088cc] opacity-100 group-hover:opacity-90 transition-opacity" />
@@ -348,11 +387,7 @@ function ScoreContent() {
             </button>
 
             <button
-              onClick={() =>
-                alert(
-                  "Stripe payment integration coming soon! This will process payment and unlock the full report."
-                )
-              }
+              onClick={handleSession}
               className="relative group overflow-hidden bg-white text-gray-800 p-1 rounded-xl cursor-pointer shadow-md hover:shadow-xl transition-all border border-teal-100"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] opacity-0 group-hover:opacity-10 transition-opacity" />
@@ -371,13 +406,13 @@ function ScoreContent() {
         </motion.div>
 
         {/* Share Section */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.2 }}
           className="bg-white rounded-xl shadow-lg p-6 text-center relative"
-        >
-          <p className="text-gray-600 mb-3">
+        > */}
+        {/* <p className="text-gray-600 mb-3">
             Share your score with colleagues:
           </p>
           <button
@@ -386,10 +421,10 @@ function ScoreContent() {
           >
             <Share2 className="w-5 h-5 text-[#005DAA]" />
             <span>Share My Score</span>
-          </button>
+          </button> */}
 
-          {/* Modal */}
-          <AnimatePresence>
+        {/* Modal */}
+        {/* <AnimatePresence>
             {isShareOpen && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -465,8 +500,8 @@ function ScoreContent() {
                 </motion.div>
               </motion.div>
             )}
-          </AnimatePresence>
-        </motion.div>
+          </AnimatePresence> */}
+        {/* </motion.div> */}
       </div>
     </div>
   );

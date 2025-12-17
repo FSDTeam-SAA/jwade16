@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useGetRole } from "@/lib/hooks/useRole";
 import { usePostPayPower } from "@/lib/hooks/usePayPower";
 import { useState } from "react";
+import Link from "next/link";
 
 interface Question {
   id: string;
@@ -152,7 +153,7 @@ export default function QuestionnairePage() {
   const { mutateAsync: postPayPower, isPending: isSubmitting } =
     usePostPayPower();
 
-  console.log(roleData);
+  // console.log(roleData);
 
   const handleEmailSubmit = async () => {
     if (!email.trim()) return;
@@ -176,7 +177,8 @@ export default function QuestionnairePage() {
       if (response && response.success && response.data) {
         setScoreResults(
           response.data.payPowerScore,
-          response.data.marketGapDetected
+          response.data.marketGapDetected,
+          response.data.user_selection_id
         );
       }
 
@@ -213,9 +215,11 @@ export default function QuestionnairePage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xl sm:text-2xl shadow-md tracking-wide mb-6">
-              COMPanion
-            </span>
+            <Link href="/">
+              <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
+                COMPanion
+              </span>
+            </Link>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
               Your Pay Power Assessment
             </h2>
@@ -308,9 +312,11 @@ export default function QuestionnairePage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xl sm:text-2xl shadow-md tracking-wide mb-6">
-            COMPanion
-          </span>
+          <Link href="/">
+            <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
+              COMPanion
+            </span>
+          </Link>
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
             Your Pay Power Assessment
           </h2>
