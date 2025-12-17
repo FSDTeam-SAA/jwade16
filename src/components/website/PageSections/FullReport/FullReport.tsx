@@ -1,6 +1,6 @@
 "use client";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
   Target,
@@ -16,8 +16,9 @@ import {
   ChevronRight,
   Download,
   Loader2,
+  Calendar as CalendarIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import Link from "next/link";
@@ -27,6 +28,24 @@ export default function FullReport() {
     useQuestionnaireStore();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(true);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    // Countdown timer
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setShowSuccess(false); // Hide success screen after countdown
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Use store data or fallback to mock data
   const score = payPowerScore ?? 72;
@@ -162,390 +181,451 @@ export default function FullReport() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#005DAA0D] to-[#00C8B30D] py-10 px-4">
       <div className="max-w-5xl mx-auto">
-        <div ref={reportRef}>
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
-          >
-            <Link href="/">
-              <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
-                COMPanion
-              </span>
-            </Link>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-              Your Complete Pay Power Report (Demo Report)
-            </h1>
-            {email && (
-              <p className="text-gray-600">
-                Prepared for{" "}
-                <a
-                  href={`mailto:${email}`}
-                  className="font-semibold text-[#005DAA] underline decoration-[#005DAA66] underline-offset-4 hover:text-[#004b87] transition"
-                >
-                  {email}
-                </a>
-              </p>
-            )}
-          </motion.div>
+        <AnimatePresence mode="wait">
+          {showSuccess ? (
+            <motion.div
+              key="success"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.5, type: "spring", damping: 20 }}
+              className="flex flex-col items-center justify-center min-h-[60vh] bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100 relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
 
-          {/* Quick Stats Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-          >
-            {[
-              { icon: Briefcase, label: "Role", value: role },
-              { icon: MapPin, label: "Location", value: location },
-              { icon: Clock, label: "Experience", value: experience },
-              { icon: DollarSign, label: "Current Pay", value: currentPay },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-24 h-24 mb-6 relative"
               >
-                <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </div>
-                <p className="font-semibold text-gray-800 truncate">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Pay Power Score Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100 relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
-
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              {/* Score Circle */}
-              <div className="relative">
-                <svg className="w-40 h-40 transform -rotate-90">
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="70"
-                    stroke="#f3f4f6"
-                    strokeWidth="12"
-                    fill="none"
-                  />
-                  <motion.circle
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: score / 100 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    cx="80"
-                    cy="80"
-                    r="70"
-                    stroke="url(#scoreGradient)"
-                    strokeWidth="12"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="scoreGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop offset="0%" stopColor="#005DAA" />
-                      <stop offset="100%" stopColor="#00C8B3" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text">
-                    {score}
-                  </span>
-                  <span className="text-gray-400 text-sm">/ 100</span>
-                </div>
-              </div>
-
-              {/* Score Analysis */}
-              <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Your Pay Power Score
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  {marketGapDetected ||
-                    `You're in the ${mockReportData.marketAnalysis.percentile}th percentile for your role and location.`}
-                </p>
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  <span className="inline-flex items-center gap-1 bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
-                    <TrendingUp className="w-4 h-4" />$
-                    {(mockReportData.marketAnalysis.gap / 1000).toFixed(0)}k
-                    below market
-                  </span>
-                  <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-sm font-medium">
-                    <Target className="w-4 h-4" />
-                    High negotiation potential
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Market Analysis Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-blue-50 rounded-xl">
-                <TrendingUp className="w-6 h-6 text-[#005DAA]" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Market Analysis
-              </h2>
-            </div>
-
-            {/* Salary Comparison Visual */}
-            <div className="mb-8">
-              <div className="relative pt-8 pb-4">
-                {/* Scale */}
-                <div className="h-4 bg-gray-100 rounded-full overflow-hidden relative">
-                  <div
-                    className="absolute h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-400"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-
-                {/* Markers */}
-                <div className="relative mt-4">
-                  {/* Your Position */}
-                  <div
-                    className="absolute transform -translate-x-1/2"
-                    style={{
-                      left: `${(mockReportData.marketAnalysis.yourSalary / mockReportData.marketAnalysis.marketTop) * 100}%`,
-                    }}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] rounded-full opacity-20 animate-pulse" />
+                <div className="absolute inset-2 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] rounded-full flex items-center justify-center shadow-lg">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
                   >
-                    <div className="w-4 h-4 bg-[#005DAA] rounded-full border-2 border-white shadow-lg mx-auto" />
-                    <div className="mt-2 text-center">
-                      <p className="text-xs text-gray-500">You</p>
-                      <p className="font-bold text-[#005DAA]">
-                        $
-                        {(
-                          mockReportData.marketAnalysis.yourSalary / 1000
-                        ).toFixed(0)}
-                        k
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Market Median */}
-                  <div
-                    className="absolute transform -translate-x-1/2"
-                    style={{
-                      left: `${(mockReportData.marketAnalysis.marketMedian / mockReportData.marketAnalysis.marketTop) * 100}%`,
-                    }}
-                  >
-                    <div className="w-4 h-4 bg-[#00C8B3] rounded-full border-2 border-white shadow-lg mx-auto" />
-                    <div className="mt-2 text-center">
-                      <p className="text-xs text-gray-500">Market Median</p>
-                      <p className="font-bold text-[#00C8B3]">
-                        $
-                        {(
-                          mockReportData.marketAnalysis.marketMedian / 1000
-                        ).toFixed(0)}
-                        k
-                      </p>
-                    </div>
-                  </div>
+                    <CheckCircle
+                      className="w-12 h-12 text-white"
+                      strokeWidth={2.5}
+                    />
+                  </motion.div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
 
-            {/* Compensation Breakdown Table */}
-            <h3 className="font-semibold text-gray-800 mb-4">
-              Compensation Breakdown
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-3 text-sm font-medium text-gray-500">
-                      Component
-                    </th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">
-                      Your Comp
-                    </th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">
-                      Market Rate
-                    </th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">
-                      Gap
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockReportData.compensationBreakdown.map((row, idx) => (
-                    <tr key={idx} className="border-b border-gray-50">
-                      <td className="py-3 font-medium text-gray-800">
-                        {row.category}
-                      </td>
-                      <td className="py-3 text-right text-gray-600">
-                        ${(row.yours / 1000).toFixed(0)}k
-                      </td>
-                      <td className="py-3 text-right text-[#00C8B3] font-medium">
-                        ${(row.market / 1000).toFixed(0)}k
-                      </td>
-                      <td className="py-3 text-right text-red-500 font-medium">
-                        -${((row.market - row.yours) / 1000).toFixed(0)}k
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-3xl font-bold text-gray-800 mb-3 text-center"
+              >
+                Payment Successful!
+              </motion.h2>
 
-          {/* Leverage Points */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-teal-50 rounded-xl">
-                <Shield className="w-6 h-6 text-[#00C8B3]" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Your Negotiation Leverage Points
-              </h2>
-            </div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-600 text-center max-w-md mb-8"
+              >
+                Thank you for your purchase. We are preparing your full report.
+              </motion.p>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {mockReportData.leveragePoints.map((point, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl"
-                >
-                  <CheckCircle className="w-5 h-5 text-[#00C8B3] mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">{point}</span>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="w-full max-w-xs"
+              >
+                <div className="flex items-center justify-center gap-2 text-gray-500 mb-3">
+                  <CalendarIcon className="w-5 h-5 text-[#005DAA]" />
+                  <span className="text-sm font-medium">Loading Report...</span>
                 </div>
-              ))}
-            </div>
-          </motion.div>
 
-          {/* 90-Day Action Plan */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-purple-50 rounded-xl">
-                <Calendar className="w-6 h-6 text-purple-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Your 90-Day Action Plan
-              </h2>
-            </div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text text-center mb-4">
+                  {countdown}
+                </div>
 
-            <div className="space-y-6">
-              {mockReportData.actionPlan.map((phase, idx) => (
-                <div
-                  key={idx}
-                  className="relative pl-8 border-l-2 border-gray-200"
-                >
-                  <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
-                  <div className="mb-2">
-                    <span className="text-sm font-medium text-[#005DAA]">
-                      {phase.week}
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 3, ease: "linear" }}
+                    className="h-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3]"
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="report"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div ref={reportRef}>
+                {/* Header */}
+                <motion.div className="text-center mb-10">
+                  <Link href="/">
+                    <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
+                      COMPanion
                     </span>
-                    <h3 className="font-bold text-gray-800">{phase.title}</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {phase.tasks.map((task, taskIdx) => (
-                      <li
-                        key={taskIdx}
-                        className="flex items-start gap-2 text-gray-600"
+                  </Link>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+                    Your Complete Pay Power Report (Demo Report)
+                  </h1>
+                  {email && (
+                    <p className="text-gray-600">
+                      Prepared for{" "}
+                      <a
+                        href={`mailto:${email}`}
+                        className="font-semibold text-[#005DAA] underline decoration-[#005DAA66] underline-offset-4 hover:text-[#004b87] transition"
                       >
-                        <ChevronRight className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <span>{task}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+                        {email}
+                      </a>
+                    </p>
+                  )}
+                </motion.div>
 
-          {/* Negotiation Scripts */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-indigo-50 rounded-xl">
-                <MessageSquare className="w-6 h-6 text-indigo-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Negotiation Scripts & Templates
-              </h2>
-            </div>
+                {/* Quick Stats Bar */}
+                <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  {[
+                    { icon: Briefcase, label: "Role", value: role },
+                    { icon: MapPin, label: "Location", value: location },
+                    { icon: Clock, label: "Experience", value: experience },
+                    {
+                      icon: DollarSign,
+                      label: "Current Pay",
+                      value: currentPay,
+                    },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+                    >
+                      <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </div>
+                      <p className="font-semibold text-gray-800 truncate">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+                </motion.div>
 
-            <div className="space-y-4">
-              {mockReportData.scripts.map((script, idx) => (
-                <div
-                  key={idx}
-                  className="p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100"
-                >
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-[#005DAA]" />
-                    {script.title}
+                {/* Pay Power Score Card */}
+                <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
+
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    {/* Score Circle */}
+                    <div className="relative">
+                      <svg className="w-40 h-40 transform -rotate-90">
+                        <circle
+                          cx="80"
+                          cy="80"
+                          r="70"
+                          stroke="#f3f4f6"
+                          strokeWidth="12"
+                          fill="none"
+                        />
+                        <motion.circle
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: score / 100 }}
+                          transition={{ duration: 1.5, ease: "easeOut" }}
+                          cx="80"
+                          cy="80"
+                          r="70"
+                          stroke="url(#scoreGradient)"
+                          strokeWidth="12"
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                        <defs>
+                          <linearGradient
+                            id="scoreGradient"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop offset="0%" stopColor="#005DAA" />
+                            <stop offset="100%" stopColor="#00C8B3" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-4xl font-black bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text">
+                          {score}
+                        </span>
+                        <span className="text-gray-400 text-sm">/ 100</span>
+                      </div>
+                    </div>
+
+                    {/* Score Analysis */}
+                    <div className="flex-1 text-center md:text-left">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                        Your Pay Power Score
+                      </h2>
+                      <p className="text-gray-600 mb-4">
+                        {marketGapDetected ||
+                          `You're in the ${mockReportData.marketAnalysis.percentile}th percentile for your role and location.`}
+                      </p>
+                      <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                        <span className="inline-flex items-center gap-1 bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
+                          <TrendingUp className="w-4 h-4" />$
+                          {(mockReportData.marketAnalysis.gap / 1000).toFixed(
+                            0
+                          )}
+                          k below market
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-sm font-medium">
+                          <Target className="w-4 h-4" />
+                          High negotiation potential
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Market Analysis Section */}
+                <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-blue-50 rounded-xl">
+                      <TrendingUp className="w-6 h-6 text-[#005DAA]" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Market Analysis
+                    </h2>
+                  </div>
+
+                  {/* Salary Comparison Visual */}
+                  <div className="mb-8">
+                    <div className="relative pt-8 pb-4">
+                      {/* Scale */}
+                      <div className="h-4 bg-gray-100 rounded-full overflow-hidden relative">
+                        <div
+                          className="absolute h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-400"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+
+                      {/* Markers */}
+                      <div className="relative mt-4">
+                        {/* Your Position */}
+                        <div
+                          className="absolute transform -translate-x-1/2"
+                          style={{
+                            left: `${(mockReportData.marketAnalysis.yourSalary / mockReportData.marketAnalysis.marketTop) * 100}%`,
+                          }}
+                        >
+                          <div className="w-4 h-4 bg-[#005DAA] rounded-full border-2 border-white shadow-lg mx-auto" />
+                          <div className="mt-2 text-center">
+                            <p className="text-xs text-gray-500">You</p>
+                            <p className="font-bold text-[#005DAA]">
+                              $
+                              {(
+                                mockReportData.marketAnalysis.yourSalary / 1000
+                              ).toFixed(0)}
+                              k
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Market Median */}
+                        <div
+                          className="absolute transform -translate-x-1/2"
+                          style={{
+                            left: `${(mockReportData.marketAnalysis.marketMedian / mockReportData.marketAnalysis.marketTop) * 100}%`,
+                          }}
+                        >
+                          <div className="w-4 h-4 bg-[#00C8B3] rounded-full border-2 border-white shadow-lg mx-auto" />
+                          <div className="mt-2 text-center">
+                            <p className="text-xs text-gray-500">
+                              Market Median
+                            </p>
+                            <p className="font-bold text-[#00C8B3]">
+                              $
+                              {(
+                                mockReportData.marketAnalysis.marketMedian /
+                                1000
+                              ).toFixed(0)}
+                              k
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compensation Breakdown Table */}
+                  <h3 className="font-semibold text-gray-800 mb-4">
+                    Compensation Breakdown
                   </h3>
-                  <p className="text-gray-600 italic leading-relaxed">
-                    &ldquo;{script.script}&rdquo;
-                  </p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left py-3 text-sm font-medium text-gray-500">
+                            Component
+                          </th>
+                          <th className="text-right py-3 text-sm font-medium text-gray-500">
+                            Your Comp
+                          </th>
+                          <th className="text-right py-3 text-sm font-medium text-gray-500">
+                            Market Rate
+                          </th>
+                          <th className="text-right py-3 text-sm font-medium text-gray-500">
+                            Gap
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mockReportData.compensationBreakdown.map(
+                          (row, idx) => (
+                            <tr key={idx} className="border-b border-gray-50">
+                              <td className="py-3 font-medium text-gray-800">
+                                {row.category}
+                              </td>
+                              <td className="py-3 text-right text-gray-600">
+                                ${(row.yours / 1000).toFixed(0)}k
+                              </td>
+                              <td className="py-3 text-right text-[#00C8B3] font-medium">
+                                ${(row.market / 1000).toFixed(0)}k
+                              </td>
+                              <td className="py-3 text-right text-red-500 font-medium">
+                                - $
+                                {((row.market - row.yours) / 1000).toFixed(0)}k
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
 
-        {/* Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <button
-            onClick={handleDownloadPDF}
-            disabled={isDownloading}
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#005DAA] to-[#0088cc] text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Generating PDF...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" />
-                Download PDF Report
-              </>
-            )}
-          </button>
-        </motion.div>
+                {/* Leverage Points */}
+                <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-teal-50 rounded-xl">
+                      <Shield className="w-6 h-6 text-[#00C8B3]" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Your Negotiation Leverage Points
+                    </h2>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {mockReportData.leveragePoints.map((point, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl"
+                      >
+                        <CheckCircle className="w-5 h-5 text-[#00C8B3] mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* 90-Day Action Plan */}
+                <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-purple-50 rounded-xl">
+                      <Calendar className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Your 90-Day Action Plan
+                    </h2>
+                  </div>
+
+                  <div className="space-y-6">
+                    {mockReportData.actionPlan.map((phase, idx) => (
+                      <div
+                        key={idx}
+                        className="relative pl-8 border-l-2 border-gray-200"
+                      >
+                        <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
+                        <div className="mb-2">
+                          <span className="text-sm font-medium text-[#005DAA]">
+                            {phase.week}
+                          </span>
+                          <h3 className="font-bold text-gray-800">
+                            {phase.title}
+                          </h3>
+                        </div>
+                        <ul className="space-y-2">
+                          {phase.tasks.map((task, taskIdx) => (
+                            <li
+                              key={taskIdx}
+                              className="flex items-start gap-2 text-gray-600"
+                            >
+                              <ChevronRight className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                              <span>{task}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Negotiation Scripts */}
+                <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-indigo-50 rounded-xl">
+                      <MessageSquare className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Negotiation Scripts & Templates
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    {mockReportData.scripts.map((script, idx) => (
+                      <div
+                        key={idx}
+                        className="p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100"
+                      >
+                        <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-[#005DAA]" />
+                          {script.title}
+                        </h3>
+                        <p className="text-gray-600 italic leading-relaxed">
+                          &ldquo;{script.script}&rdquo;
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Action Buttons */}
+              <motion.div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={isDownloading}
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#005DAA] to-[#0088cc] text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Download PDF Report
+                    </>
+                  )}
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
