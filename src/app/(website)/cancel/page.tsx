@@ -1,10 +1,10 @@
-import Login from "@/components/website/Auth/login";
+import Cancel from "@/components/website/PageSections/Cancel/Cancel";
 import React from "react";
 
 export default function page() {
   return (
     <div>
-      <Login />
+      <Cancel />
     </div>
   );
 }

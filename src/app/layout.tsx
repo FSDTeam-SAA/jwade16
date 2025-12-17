@@ -22,9 +22,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Hierro A Medida",
-  description:
-    "Design amazing digital experiences that create more happy in the world.",
+  title: "Pay Power Score",
+  description: "Pay Power Score",
 };
 
 export default function RootLayout({

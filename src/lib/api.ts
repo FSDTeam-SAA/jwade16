@@ -40,3 +40,22 @@ export async function postPayPower(data: PayPowerPayload) {
     throw new Error("Failed to fetch all roles");
   }
 }
+
+// checkout page (stripe)
+export interface CheckoutSessionPayload {
+  userId?: string | null;
+  totalAmount: number;
+  type?: string;
+  cartItems?: { cartId: string }[];
+  paymentType?: string;
+}
+
+export async function postCheckoutSession(data: CheckoutSessionPayload) {
+  try {
+    const res = await api.post(`/payments/stripe/create`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    throw new Error("Failed to fetch all roles");
+  }
+}
