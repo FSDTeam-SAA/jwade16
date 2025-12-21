@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import {
   TrendingUp,
   Lock,
-  Share2,
-  X,
+
   CheckCircle,
   ArrowRight,
   Shield,
   FileText,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -33,8 +31,6 @@ function ScoreContent() {
   } = useQuestionnaireStore();
   const checkoutMutation = usePostCheckoutSession();
 
-  console.log(payPowerScore);
-
   const email = searchParamEmail || storeEmail;
 
   useEffect(() => {
@@ -53,7 +49,7 @@ function ScoreContent() {
   // Use store data or fallback to 0/empty
   const score = payPowerScore ?? 0;
 
-  // Extract percentage from string like "27% Below Market" if possible
+
   // If undefined/null, default to 0
   let belowMarket = 0;
   if (marketGapDetected) {
@@ -80,23 +76,9 @@ function ScoreContent() {
   let moneyLeft = 0;
   if (belowMarket > 0) {
     const marketRate = estimatedSalary / ((100 - belowMarket) / 100);
-    moneyLeft = Math.round((marketRate - estimatedSalary) / 1000); // In thousands (k)
+    moneyLeft = Math.round((marketRate - estimatedSalary) / 1000);
   }
 
-  const [isShareOpen, setIsShareOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-    toast.success("Copied to clipboard");
-    setTimeout(() => {
-      setCopied(false);
-      setIsShareOpen(false);
-    }, 1000);
-  };
 
   const handleFullReport = () => {
     checkoutMutation.mutate(
@@ -404,104 +386,6 @@ function ScoreContent() {
             </button>
           </motion.div>
         </motion.div>
-
-        {/* Share Section */}
-        {/* <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.2 }}
-          className="bg-white rounded-xl shadow-lg p-6 text-center relative"
-        > */}
-        {/* <p className="text-gray-600 mb-3">
-            Share your score with colleagues:
-          </p>
-          <button
-            onClick={() => setIsShareOpen(true)}
-            className="group relative inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white text-gray-800 font-semibold shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 cursor-pointer"
-          >
-            <Share2 className="w-5 h-5 text-[#005DAA]" />
-            <span>Share My Score</span>
-          </button> */}
-
-        {/* Modal */}
-        {/* <AnimatePresence>
-            {isShareOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative"
-                >
-                  <div className="bg-gradient-to-r from-[#005DAA] to-[#00C8B3] p-6 text-white text-center relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4">
-                      <button
-                        onClick={() => setIsShareOpen(false)}
-                        className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-1 cursor-pointer"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring" }}
-                      className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-3"
-                    >
-                      <Share2 className="w-6 h-6 text-white" />
-                    </motion.div>
-                    <h3 className="text-xl font-bold">Share Your Results</h3>
-                    <p className="text-white/80 text-sm mt-1">
-                      Let your colleagues know how you stack up
-                    </p>
-                  </div>
-
-                  <div className="p-8">
-                    <p className="text-sm font-medium text-gray-700 mb-3 text-left">
-                      Copy secure link
-                    </p>
-                    <div className="flex items-center gap-2 mb-6 bg-gray-50 border border-gray-200 rounded-xl p-2 pl-4">
-                      <input
-                        type="text"
-                        value={shareUrl}
-                        readOnly
-                        className="flex-1 bg-transparent text-gray-600 text-sm font-mono focus:outline-none truncate"
-                      />
-                      <button
-                        onClick={handleCopy}
-                        className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 cursor-pointer ${
-                          copied
-                            ? "bg-green-500 text-white shadow-md"
-                            : "bg-[#005DAA] text-white hover:bg-[#004a88] shadow-md hover:shadow-lg"
-                        }`}
-                      >
-                        {copied ? (
-                          <>
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                            >
-                              ✓
-                            </motion.div>
-                            Copied
-                          </>
-                        ) : (
-                          "Copy"
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence> */}
-        {/* </motion.div> */}
       </div>
     </div>
   );
