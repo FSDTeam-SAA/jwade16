@@ -50,9 +50,22 @@ export interface CheckoutSessionPayload {
   paymentType?: string;
 }
 
+// post checkout session
 export async function postCheckoutSession(data: CheckoutSessionPayload) {
   try {
     const res = await api.post(`/payments/stripe/create`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    throw new Error("Failed to fetch all roles");
+  }
+}
+
+// get full report
+export async function getFullReport(score: number) {
+  try {
+    const res = await api.get(`/paypower?score=${score}`);
+    console.log(res.data);
     return res.data;
   } catch (err) {
     console.error("Error fetching roles:", err);
