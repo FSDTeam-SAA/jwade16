@@ -153,8 +153,7 @@ export default function QuestionnairePage() {
   const { mutateAsync: postPayPower, isPending: isSubmitting } =
     usePostPayPower();
 
-  // console.log(roleData);
-
+    
   const handleEmailSubmit = async () => {
     if (!email.trim()) return;
 
@@ -181,11 +180,7 @@ export default function QuestionnairePage() {
           response.data.user_selection_id
         );
       }
-
-      // 1️⃣ Log the current store data
-      console.log("All ZUSTAND STORE DATA:", { answers, email, response });
-
-      // 2️⃣ Navigate to /score
+      // 2️ Navigate to /score
       router.push(`/score`);
     } catch (error) {
       console.error("Failed to submit:", error);

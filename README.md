@@ -6,7 +6,7 @@ A modern, scalable website built using **Next.js 14**, **TypeScript**, **Tailwin
 
 ## 🚀 Tech Stack
 
-- **Framework:** [Next.js 14](https://nextjs.org/)
+- **Framework:** [Next.js 16.0.7](https://nextjs.org/)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS + Shadcn/UI
 - **Icons:** Lucide Icons

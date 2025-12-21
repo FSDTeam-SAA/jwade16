@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Calendar, ExternalLink } from "lucide-react";
 
@@ -83,8 +83,8 @@ export default function Success() {
           transition={{ delay: 0.4 }}
           className="text-gray-600 mb-6"
         >
-          Thank you for your purchase. You&apos;re being redirected to schedule
-          your consultation.
+          Thank you for your Unlocked PayPower Score. You&apos;re being
+          redirected to schedule your consultation.
         </motion.p>
 
         {/* Countdown indicator */}
