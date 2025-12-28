@@ -3,7 +3,6 @@
 import {
   TrendingUp,
   Lock,
-
   CheckCircle,
   ArrowRight,
   Shield,
@@ -49,7 +48,6 @@ function ScoreContent() {
   // Use store data or fallback to 0/empty
   const score = payPowerScore ?? 0;
 
-
   // If undefined/null, default to 0
   let belowMarket = 0;
   if (marketGapDetected) {
@@ -58,27 +56,6 @@ function ScoreContent() {
       belowMarket = parseInt(match[1], 10);
     }
   }
-
-  // Calculate moneyLeft based on currentPay and belowMarket percentage
-  let estimatedSalary = 10; // Default fallback
-  const currentPay = answers.currentPay;
-
-  if (currentPay) {
-    if (currentPay === "Under $50k") estimatedSalary = 40000;
-    else if (currentPay === "$50k-$75k") estimatedSalary = 62500;
-    else if (currentPay === "$75k-$100k") estimatedSalary = 87500;
-    else if (currentPay === "$100k-$150k") estimatedSalary = 125000;
-    else if (currentPay === "$150k-$200k") estimatedSalary = 175000;
-    else if (currentPay === "$200k-$300k") estimatedSalary = 250000;
-    else if (currentPay === "$300k+") estimatedSalary = 350000;
-  }
-
-  let moneyLeft = 0;
-  if (belowMarket > 0) {
-    const marketRate = estimatedSalary / ((100 - belowMarket) / 100);
-    moneyLeft = Math.round((marketRate - estimatedSalary) / 1000);
-  }
-
 
   const handleFullReport = () => {
     checkoutMutation.mutate(
@@ -105,7 +82,7 @@ function ScoreContent() {
     checkoutMutation.mutate(
       {
         userId: userSelectionId,
-        totalAmount: 197,
+        totalAmount: 497,
         paymentType: "bookSeason",
       },
       {
@@ -254,11 +231,11 @@ function ScoreContent() {
                     Market Gap Detected: {belowMarket}% Below Market
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Based on your role and location, you are currently
-                    undercompensated by approximately{" "}
-                    <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
+                    Based on your role and location, your contributions may not
+                    be fully recognized{" "}
+                    {/* <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
                       ${moneyLeft}k per year
-                    </span>
+                    </span> */}
                     .
                   </p>
                 </div>
@@ -379,7 +356,7 @@ function ScoreContent() {
                   Book Strategy Session
                 </span>
                 <span className="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-sm font-medium border border-teal-100">
-                  $197
+                  $497
                 </span>
                 <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
               </div>
