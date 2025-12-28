@@ -1,5 +1,7 @@
 "use client";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
+import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -22,7 +24,9 @@ import Link from "next/link";
 import { useFullReport } from "@/lib/hooks/useFullReport";
 
 export default function FullReport() {
-  const { email, payPowerScore, answers } = useQuestionnaireStore();
+  const { email, payPowerScore, answers, userSelectionId } =
+    useQuestionnaireStore();
+  const checkoutMutation = usePostCheckoutSession();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(true);
@@ -110,6 +114,28 @@ export default function FullReport() {
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  // Handle session
+  const handleSession = () => {
+    checkoutMutation.mutate(
+      {
+        userId: userSelectionId,
+        totalAmount: 497,
+        paymentType: "bookSeason",
+      },
+      {
+        onSuccess: (data) => {
+          if (data?.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          }
+        },
+        onError: (error) => {
+          toast.error("Failed to create checkout session");
+          console.error("Checkout error:", error);
+        },
+      }
+    );
   };
 
   if (isLoading && !showSuccess) {
@@ -454,7 +480,10 @@ export default function FullReport() {
                           </div>
                           {fullReport.nextMove.ctaButton && (
                             <div className="pt-4">
-                              <button className="bg-[#00C8B3] hover:bg-[#00b09e] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-[#00C8B3]/20 transition-all transform hover:-translate-y-1 cursor-pointer">
+                              <button
+                                onClick={handleSession}
+                                className="bg-[#00C8B3] hover:bg-[#00b09e] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-[#00C8B3]/20 transition-all transform hover:-translate-y-1 cursor-pointer"
+                              >
                                 {fullReport.nextMove.ctaButton}
                               </button>
                             </div>
