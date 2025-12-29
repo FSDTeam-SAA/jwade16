@@ -228,7 +228,7 @@ function ScoreContent() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-xl mb-2">
-                    Market Gap Detected: {belowMarket}% Below Market
+                    Potential Market Gap Detected: {belowMarket}% Below Market
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
                     Based on your role and location, your contributions may not
