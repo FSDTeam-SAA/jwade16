@@ -153,7 +153,6 @@ export default function QuestionnairePage() {
   const { mutateAsync: postPayPower, isPending: isSubmitting } =
     usePostPayPower();
 
-    
   const handleEmailSubmit = async () => {
     if (!email.trim()) return;
 
@@ -258,6 +257,24 @@ export default function QuestionnairePage() {
             <p className="text-xs text-gray-400 text-center mt-4">
               We respect your privacy. Unsubscribe anytime.
             </p>
+
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500">
+              <Link
+                href="/privacy-policy"
+                className="hover:text-[#005DAA] transition-colors underline-offset-4 hover:underline"
+              >
+                Privacy Policy
+              </Link>
+
+              <span className="hidden sm:inline text-gray-300">|</span>
+
+              <Link
+                href="/terms-conditions"
+                className="hover:text-[#00C8B3] transition-colors underline-offset-4 hover:underline"
+              >
+                Terms &amp; Conditions
+              </Link>
+            </div>
           </motion.div>
         </div>
       </div>
