@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
 import Link from "next/link";
@@ -31,6 +31,8 @@ function ScoreContent() {
   const checkoutMutation = usePostCheckoutSession();
 
   const email = searchParamEmail || storeEmail;
+
+  const [isAccepted, setIsAccepted] = useState(false);
 
   useEffect(() => {
     // 1. If we have email in store but NOT in URL, update URL
@@ -58,6 +60,7 @@ function ScoreContent() {
   }
 
   const handleFullReport = () => {
+    if (!isAccepted) return;
     checkoutMutation.mutate(
       {
         userId: userSelectionId,
@@ -79,6 +82,7 @@ function ScoreContent() {
   };
 
   const handleSession = () => {
+    if (!isAccepted) return;
     checkoutMutation.mutate(
       {
         userId: userSelectionId,
@@ -276,7 +280,7 @@ function ScoreContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="grid md:grid-cols-2 gap-4 mb-10"
+            className="grid md:grid-cols-2 gap-4"
           >
             {[
               {
@@ -324,6 +328,45 @@ function ScoreContent() {
             ))}
           </motion.div>
 
+          {/* Consent Checkbox */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="my-6 p-4 rounded-2xl bg-gray-50 border border-gray-100"
+          >
+            <label className="flex gap-3 cursor-pointer group">
+              <div className="relative flex items-center mt-1">
+                <input
+                  type="checkbox"
+                  checked={isAccepted}
+                  onChange={(e) => setIsAccepted(e.target.checked)}
+                  className="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded-md checked:bg-[#00C8B3] checked:border-[#00C8B3] transition-all cursor-pointer"
+                />
+                <CheckCircle className="absolute w-3.5 h-3.5 left-0.5 top-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+              <span className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium group-hover:text-gray-900 transition-colors">
+                I understand this is paid advisory, not legal, tax, or financial
+                advice. I acknowledge that COMPanion Pay LLC does not guarantee
+                compensation outcomes. I agree to the{" "}
+                <Link
+                  href="/terms-conditions"
+                  className="text-[#005DAA] border-b border-[#005DAA]/20 hover:border-[#005DAA] transition-all"
+                >
+                  Terms & Conditions
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/terms-conditions"
+                  className="text-[#005DAA] border-b border-[#005DAA]/20 hover:border-[#005DAA] transition-all"
+                >
+                  Refund & Cancellation Policy
+                </Link>
+                .
+              </span>
+            </label>
+          </motion.div>
+
           {/* Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -333,10 +376,21 @@ function ScoreContent() {
           >
             <button
               onClick={handleFullReport}
-              className="relative group overflow-hidden bg-[#005DAA] text-white p-1 rounded-xl cursor-pointer shadow-lg hover:shadow-xl transition-all"
+              disabled={!isAccepted}
+              className={`relative group overflow-hidden p-1 rounded-xl shadow-lg transition-all ${
+                isAccepted
+                  ? "bg-[#005DAA] cursor-pointer hover:shadow-xl"
+                  : "bg-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#005DAA] to-[#0088cc] opacity-100 group-hover:opacity-90 transition-opacity" />
-              <div className="relative bg-white/10 backdrop-blur-sm h-full rounded-[10px] py-4 px-6 flex items-center justify-center gap-3 transition-colors group-hover:bg-transparent">
+              <div
+                className={`absolute inset-0 bg-gradient-to-r from-[#005DAA] to-[#0088cc] transition-opacity ${
+                  isAccepted
+                    ? "opacity-100 group-hover:opacity-90"
+                    : "opacity-0"
+                }`}
+              />
+              <div className="relative bg-white/10 backdrop-blur-sm h-full rounded-[10px] py-4 px-6 flex items-center justify-center gap-3 transition-colors group-hover:bg-transparent text-white">
                 <Lock className="w-5 h-5" />
                 <span className="font-semibold">Unlock Full Report</span>
                 <span className="bg-white/20 px-2 py-0.5 rounded text-sm">
@@ -347,22 +401,67 @@ function ScoreContent() {
 
             <button
               onClick={handleSession}
-              className="relative group overflow-hidden bg-white text-gray-800 p-1 rounded-xl cursor-pointer shadow-md hover:shadow-xl transition-all border border-teal-100"
+              disabled={!isAccepted}
+              className={`relative group overflow-hidden p-1 rounded-xl shadow-md transition-all border ${
+                isAccepted
+                  ? "bg-white text-gray-800 cursor-pointer hover:shadow-xl border-teal-100"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+              }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] opacity-0 group-hover:opacity-10 transition-opacity" />
+              <div
+                className={`absolute inset-0 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] transition-opacity ${
+                  isAccepted ? "opacity-0 group-hover:opacity-10" : "opacity-0"
+                }`}
+              />
               <div className="relative h-full rounded-[10px] py-4 px-6 flex items-center justify-center gap-3">
-                <span className="font-semibold text-gray-700 group-hover:text-teal-700 transition-colors flex items-center gap-2">
+                <span
+                  className={`font-semibold transition-colors flex items-center gap-2 ${
+                    isAccepted
+                      ? "text-gray-700 group-hover:text-teal-700 font-bold"
+                      : "text-gray-400"
+                  }`}
+                >
                   <Lock className="w-5 h-5" />
                   Book Strategy Session
                 </span>
-                <span className="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-sm font-medium border border-teal-100">
+                <span
+                  className={`px-2 py-0.5 rounded text-sm font-medium border ${
+                    isAccepted
+                      ? "bg-teal-50 text-teal-700 border-teal-100"
+                      : "bg-gray-200 text-gray-400 border-gray-300"
+                  }`}
+                >
                   $497
                 </span>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
+                <ArrowRight
+                  className={`w-4 h-4 transition-colors ${
+                    isAccepted
+                      ? "text-gray-400 group-hover:text-teal-500"
+                      : "text-gray-300"
+                  }`}
+                />
               </div>
             </button>
           </motion.div>
         </motion.div>
+
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500">
+          <Link
+            href="/privacy-policy"
+            className="hover:text-[#005DAA] transition-colors underline-offset-4 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+
+          <span className="hidden sm:inline text-gray-300">|</span>
+
+          <Link
+            href="/terms-conditions"
+            className="hover:text-[#00C8B3] transition-colors underline-offset-4 hover:underline"
+          >
+            Terms &amp; Conditions
+          </Link>
+        </div>
       </div>
     </div>
   );
