@@ -121,6 +121,10 @@ export default function Banner() {
             Terms &amp; Conditions
           </Link>
         </div>
+
+        <footer className="mt-4 text-center text-xs sm:text-sm text-gray-500">
+          © {new Date().getFullYear()} COMPanion Pay. All rights reserved.
+        </footer>
       </div>
     </section>
   );
