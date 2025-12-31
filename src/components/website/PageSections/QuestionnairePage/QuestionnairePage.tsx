@@ -277,6 +277,10 @@ export default function QuestionnairePage() {
             </div>
           </motion.div>
         </div>
+
+        <footer className="mt-4 text-center text-xs sm:text-sm text-gray-500">
+          © {new Date().getFullYear()} COMPanion Pay. All rights reserved.
+        </footer>
       </div>
     );
   }
@@ -411,10 +415,15 @@ export default function QuestionnairePage() {
           transition={{ duration: 0.35 }}
           className="bg-white rounded-3xl shadow-2xl p-10"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {q.question}
-          </h2>
-
+          <h2 className="text-2xl font-bold text-gray-900">{q.question}</h2>
+          <div className="my-4">
+            <div className="text-[16px] text-gray-500">
+              <p>
+                Roles are grouped based on labor market data-select the option
+                that best matches what you do.
+              </p>
+            </div>
+          </div>
           {/* SEARCH BAR FOR ROLE */}
           {q.id === "role" && (
             <div className="mb-4 relative">
@@ -466,6 +475,10 @@ export default function QuestionnairePage() {
           </button>
         )}
       </div>
+
+      <footer className="mt-4 text-center text-xs sm:text-sm text-gray-500">
+        © {new Date().getFullYear()} COMPanion Pay. All rights reserved.
+      </footer>
     </div>
   );
 }
