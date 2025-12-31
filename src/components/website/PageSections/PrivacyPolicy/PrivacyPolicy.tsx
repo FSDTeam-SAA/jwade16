@@ -188,6 +188,10 @@ export default function PrivacyPolicy() {
           </div>
         </motion.div>
       </div>
+
+      <footer className="mt-4 text-center text-xs sm:text-sm text-gray-500">
+        © {new Date().getFullYear()} COMPanion Pay. All rights reserved.
+      </footer>
     </section>
   );
 }
