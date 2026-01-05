@@ -42,7 +42,7 @@ export default function Banner() {
 
           <p className="text-base sm:text-lg text-gray-600 max-w-xl sm:max-w-2xl mx-auto">
             Take our 2-minute assessment to get your personalized Pay Power
-            Score and find out exactly how much you could be earning.
+            Score and find out how much you could be earning.
           </p>
         </motion.div>
 
