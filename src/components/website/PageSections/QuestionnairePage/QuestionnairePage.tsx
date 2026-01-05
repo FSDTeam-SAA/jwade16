@@ -413,17 +413,19 @@ export default function QuestionnairePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-white rounded-3xl shadow-2xl p-10"
+          className="bg-white rounded-3xl shadow-2xl p-8 "
         >
-          <h2 className="text-2xl font-bold text-gray-900">{q.question}</h2>
-          <div className="my-4">
-            <div className="text-[16px] text-gray-500">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            {q.question}
+          </h2>
+          {q.id === "role" && (
+            <div className="text-[16px] text-gray-500 mb-4">
               <p>
-                Roles are grouped based on labor market data-select the option
+                Roles are grouped based on labor market data—select the option
                 that best matches what you do.
               </p>
             </div>
-          </div>
+          )}
           {/* SEARCH BAR FOR ROLE */}
           {q.id === "role" && (
             <div className="mb-4 relative">
