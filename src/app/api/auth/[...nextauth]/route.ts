@@ -2,8 +2,7 @@
 
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 declare module "next-auth" {
   interface Session {
@@ -11,6 +10,8 @@ declare module "next-auth" {
       id: string;
       email: string;
       role: string;
+      firstName: string;
+      lastName: string;
     };
     accessToken: string;
   }
@@ -20,6 +21,8 @@ declare module "next-auth" {
     email: string;
     role: string;
     token: string;
+    firstName: string;
+    lastName: string;
   }
 }
 
@@ -29,6 +32,8 @@ declare module "next-auth/jwt" {
     email: string;
     role: string;
     accessToken: string;
+    firstName: string;
+    lastName: string;
   }
 }
 
@@ -72,6 +77,8 @@ const handler = NextAuth({
             email: user?.email || credentials.email,
             role: user?.role || "",
             token, // accessToken from backend
+            firstName: user?.firstName || "",
+            lastName: user?.lastName || "",
           };
         } catch (error) {
           console.error("Authorize error:", error);
@@ -92,6 +99,8 @@ const handler = NextAuth({
         token.email = user.email;
         token.role = user?.role as string;
         token.accessToken = user?.token as string;
+        token.firstName = user?.firstName as string;
+        token.lastName = user?.lastName as string;
       }
       return token;
     },
@@ -102,6 +111,8 @@ const handler = NextAuth({
           id: token.id as string,
           email: token.email as string,
           role: token.role as string,
+          firstName: token.firstName as string,
+          lastName: token.lastName as string,
         };
         session.accessToken = token.accessToken as string;
       }
