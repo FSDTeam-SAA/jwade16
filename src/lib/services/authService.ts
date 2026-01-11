@@ -22,16 +22,12 @@ export const forgotPassword = async (email: string) => {
 };
 
 // Verify OTP
-export const verifyOtp = async (
-  payload: { otp: string },
-  tokenFromURL: string
-) => {
+export const verifyOtp = async (payload: { email: string; otp: string }) => {
   try {
-    const response = await axiosInstance.post("/auth/verify-otp", payload, {
-      headers: {
-        _customToken: tokenFromURL,
-      },
-    });
+    const response = await axiosInstance.post(
+      "/auth/reset/password/verify-otp",
+      payload
+    );
 
     return { success: true, data: response.data };
   } catch {

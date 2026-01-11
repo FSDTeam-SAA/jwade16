@@ -10,7 +10,7 @@ export default function VerifyOTP() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const router = useRouter();
 
-  const { handleVerifyOtp,loading } = useAuth();
+  const { handleVerifyOtp, loading } = useAuth();
 
   const handleChange = (value: string, index: number) => {
     if (value.length > 1) return;
@@ -38,8 +38,6 @@ export default function VerifyOTP() {
       toast.error(res?.message || "Failed to verify OTP");
     }
   };
-
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#ECF3EC] px-4">
@@ -102,7 +100,6 @@ export default function VerifyOTP() {
             />
           ))}
         </motion.div>
-
 
         {/* Verify Button */}
         <motion.button

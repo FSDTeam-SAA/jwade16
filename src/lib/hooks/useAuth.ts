@@ -37,17 +37,16 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
 
-    // Extract token from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromURL = urlParams.get("token") || "";
-
-    if (!tokenFromURL) {
-      setError("Invalid or missing token");
+    // Retrieve email and token from localStorage
+    const email = localStorage.getItem("email");
+ 
+    if (!email) {
+      setError("Email not found in localStorage");
       setLoading(false);
-      return { success: false, message: "No token found in URL" };
+      return { success: false, message: "Email not found. Please try again." };
     }
 
-    const res = await verifyOtp({ otp }, tokenFromURL);
+    const res = await verifyOtp({ email, otp });
 
     if (res.success) {
       setResult(res.data);
@@ -64,13 +63,16 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromURL = urlParams.get("token") || "";
+    // Retrieve token from localStorage
+    const tokenFromURL = localStorage.getItem("resetToken") || "";
 
     if (!tokenFromURL) {
-      setError("Invalid or missing token");
+      setError("Reset token not found");
       setLoading(false);
-      return { success: false, message: "No token found in URL" };
+      return {
+        success: false,
+        message: "Reset token not found. Please try again.",
+      };
     }
 
     const res = await resendForgotOtp(tokenFromURL);
@@ -90,14 +92,16 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
 
-    // Get token from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromURL = urlParams.get("token") || "";
+    // Retrieve token from localStorage
+    const tokenFromURL = localStorage.getItem("resetToken") || "";
 
     if (!tokenFromURL) {
-      setError("Invalid or missing token");
+      setError("Reset token not found");
       setLoading(false);
-      return { success: false, message: "No token found in URL" };
+      return {
+        success: false,
+        message: "Reset token not found. Please try again.",
+      };
     }
 
     const res = await resetPassword(newPassword, tokenFromURL);
