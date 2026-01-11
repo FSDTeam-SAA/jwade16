@@ -1,5 +1,6 @@
 "use client";
-
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import Sidebar from "./Sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,47 +18,45 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut, Menu } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 
 export default function DashboardHeader() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { data: session } = useSession();
 
-  console.log(session);
-
-  const loading = false;
+  // loading check removed for brevity if not needed for layout logic, or kept
 
   const handleLogout = () => {
     signOut();
     setLogoutDialogOpen(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center space-x-4 p-5 bg-white rounded-md">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
-        </div>
-      </div>
-    );
-  }
+  // ...
 
   return (
     <header className="w-full h-[100px] bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between">
       {/* Left: Logo + Sidebar Toggle */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden p-2 rounded-md border hover:bg-gray-100"
-        >
-          <Menu size={22} />
-        </button>
+        {/* Mobile Sidebar (Sheet) */}
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden">
+                <Menu size={24} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64">
+              <Sidebar className="w-full h-full border-none" />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <div className="flex flex-col">
+          <h1 className="text-lg font-bold">Dashboard</h1>
+          <p className="text-sm text-gray-500">Welcome back, Admin... </p>
+        </div>
       </div>
 
       {/* Right side */}
