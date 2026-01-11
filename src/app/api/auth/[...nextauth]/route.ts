@@ -68,7 +68,7 @@ const handler = NextAuth({
           }
 
           const user = data.data?.user;
-          const token = data.data?.accessToken;
+          const token = data.data?.token;
 
           // console.log("API Login Response:", );
 
@@ -107,6 +107,7 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       if (token) {
+        token.accessToken = token.accessToken as string;
         session.user = {
           id: token.id as string,
           email: token.email as string,

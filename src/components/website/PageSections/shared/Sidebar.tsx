@@ -22,7 +22,7 @@ const navigation = [
   { name: "All Information", href: "/dashboard", icon: LayoutDashboard },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -33,11 +33,16 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-white border-r border-gray-200 fixed">
+    <div
+      className={cn(
+        "flex h-screen w-64 flex-col bg-white border-r border-gray-200",
+        className
+      )}
+    >
       {/* Logo */}
       <div className="flex  items-center py-5 justify-center px-6">
         <Link href="/" className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-[#086646] flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#005DAA] to-[#00C8B3] flex items-center justify-center">
             <LayoutDashboard size={24} className="text-white" />
           </div>
           <div>
@@ -71,8 +76,8 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg p-3 text-base font-semibold transition-colors",
                   isActive
-                    ? "bg-[#086646] text-white"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-[#086646]"
+                    ? "bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-[#00C8B3]"
                 )}
               >
                 <item.icon className="h-5 w-5" />
