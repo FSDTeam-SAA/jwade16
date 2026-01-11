@@ -18,6 +18,7 @@ export default function ForgetPassword() {
     const response = await handleForgotPassword(email);
 
     if (response.success) {
+      localStorage.setItem("email", email);
       router.push(`/verify-otp`);
     }
   };
@@ -36,7 +37,7 @@ export default function ForgetPassword() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-3xl font-bold text-[#09714E] text-center"
+          className="text-3xl font-bold text-[#00C8B3] text-center"
         >
           Reset Your Password
         </motion.h1>
@@ -91,7 +92,7 @@ export default function ForgetPassword() {
           {/* Button */}
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             <Button
-              className="w-full bg-[#09714E] hover:bg-[#09714E] mt-4 text-white cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#005DAA] to-[#00C8B3] mt-4 text-white cursor-pointer"
               onClick={handleSendCode}
               disabled={loading}
             >

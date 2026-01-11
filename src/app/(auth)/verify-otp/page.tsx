@@ -1,10 +1,9 @@
-import VerifyOtp from "@/components/website/PageSections/Auth/VerifyOtp/VerifyOtp";
-import React from "react";
+import VerifyOTP from "@/components/website/PageSections/Auth/VerifyOtp/VerifyOtp";
 
 export default function page() {
   return (
     <div>
-      <VerifyOtp />
+      <VerifyOTP />
     </div>
   );
 }
