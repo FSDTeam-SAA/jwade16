@@ -39,7 +39,7 @@ export default function useAuth() {
 
     // Retrieve email and token from localStorage
     const email = localStorage.getItem("email");
- 
+
     if (!email) {
       setError("Email not found in localStorage");
       setLoading(false);
@@ -49,6 +49,9 @@ export default function useAuth() {
     const res = await verifyOtp({ email, otp });
 
     if (res.success) {
+      if (res.data?.data?.resetToken) {
+        localStorage.setItem("resetToken", res.data.data.resetToken);
+      }
       setResult(res.data);
     } else {
       setError(res.message || "Something went wrong");

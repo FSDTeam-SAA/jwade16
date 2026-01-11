@@ -2,10 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, LogOut } from "lucide-react";
 import { useState } from "react";
 
 import { signOut } from "next-auth/react";
@@ -22,8 +19,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const navigation = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "All Information", href: "/all-info", icon: LayoutDashboard },
+  { name: "All Information", href: "/dashboard", icon: LayoutDashboard },
 ];
 
 export default function Sidebar() {
