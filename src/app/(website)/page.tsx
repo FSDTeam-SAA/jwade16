@@ -1,5 +1,6 @@
 "use client";
 import Banner from "@/components/website/PageSections/HomePage/Banner";
+import ContributionModal from "@/components/website/ContributionModal";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { useEffect } from "react";
 // import PayPowerScore from "@/components/website/PageSections/PayPowerScore/PayPowerScore";
@@ -14,6 +15,7 @@ export default function Page() {
   return (
     <div>
       <Banner />
+      <ContributionModal />
       {/* <PayPowerScore /> */}
     </div>
   );

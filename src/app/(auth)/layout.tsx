@@ -3,7 +3,7 @@ import "../globals.css";
 // import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Auth",
+  title: "Login",
   description: "Authentication Layout for Dashboard",
 };
 
