@@ -15,6 +15,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
 import Link from "next/link";
+import ContributionModal from "@/components/website/ContributionModal";
 
 function ScoreContent() {
   const router = useRouter();
@@ -104,7 +105,7 @@ function ScoreContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4 relative">
+    <div className="min-h-screen bg-linear-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4 relative">
       {/* Background circles */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div
@@ -126,7 +127,7 @@ function ScoreContent() {
           className="text-center mb-8"
         >
           <Link href="/">
-            <span className="inline-block bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
+            <span className="inline-block bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white px-6 py-2.5 rounded-full font-bold text-xl shadow-md mb-6 cursor-pointer">
               COMPanion
             </span>
           </Link>
@@ -140,7 +141,7 @@ function ScoreContent() {
           className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 border border-white/20 relative overflow-hidden"
         >
           {/* Decorative background gradient */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#005DAA] to-[#00C8B3]" />
+          <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-[#005DAA] to-[#00C8B3]" />
 
           <div className="text-center mb-4 relative z-10">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -206,7 +207,7 @@ function ScoreContent() {
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.5, type: "spring" }}
-                  className="text-5xl font-black bg-gradient-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text"
+                  className="text-5xl font-black bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text"
                 >
                   {score}
                 </motion.span>
@@ -384,7 +385,7 @@ function ScoreContent() {
               }`}
             >
               <div
-                className={`absolute inset-0 bg-gradient-to-r from-[#005DAA] to-[#0088cc] transition-opacity ${
+                className={`absolute inset-0 bg-linear-to-r from-[#005DAA] to-[#0088cc] transition-opacity ${
                   isAccepted
                     ? "opacity-100 group-hover:opacity-90"
                     : "opacity-0"
@@ -409,7 +410,7 @@ function ScoreContent() {
               }`}
             >
               <div
-                className={`absolute inset-0 bg-gradient-to-r from-[#00C8B3] to-[#00E5CC] transition-opacity ${
+                className={`absolute inset-0 bg-linear-to-r from-[#00C8B3] to-[#00E5CC] transition-opacity ${
                   isAccepted ? "opacity-0 group-hover:opacity-10" : "opacity-0"
                 }`}
               />
@@ -467,6 +468,8 @@ function ScoreContent() {
       <footer className="mt-4 text-center text-xs sm:text-sm text-gray-500">
         © {new Date().getFullYear()} COMPanion Pay. All rights reserved.
       </footer>
+
+      <ContributionModal delay={0} />
     </div>
   );
 }

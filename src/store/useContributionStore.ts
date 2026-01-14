@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface ContributionData {
   jobTitle: string;
@@ -13,7 +14,9 @@ interface ContributionData {
 
 interface ContributionStore {
   data: ContributionData;
+  hasContributed: boolean;
   setContributionData: (data: Partial<ContributionData>) => void;
+  setHasContributed: (status: boolean) => void;
   reset: () => void;
 }
 
@@ -28,9 +31,19 @@ const initialData: ContributionData = {
   jobLevel: "",
 };
 
-export const useContributionStore = create<ContributionStore>((set) => ({
-  data: initialData,
-  setContributionData: (updates) =>
-    set((state) => ({ data: { ...state.data, ...updates } })),
-  reset: () => set({ data: initialData }),
-}));
+export const useContributionStore = create<ContributionStore>()(
+  persist(
+    (set) => ({
+      data: initialData,
+      hasContributed: false,
+      setContributionData: (updates) =>
+        set((state) => ({ data: { ...state.data, ...updates } })),
+      setHasContributed: (hasContributed) => set({ hasContributed }),
+      reset: () => set({ data: initialData }),
+    }),
+    {
+      name: "contribution-storage",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);

@@ -1,4 +1,3 @@
-"use strict";
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -13,20 +12,36 @@ import {
 import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useContributionStore } from "@/store/useContributionStore";
 
-export default function ContributionModal() {
+export default function ContributionModal({
+  delay = 2000,
+}: {
+  delay?: number;
+}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Check if the user has already seen the modal in this session to avoid annoyance
-    // For now, per requirements, just show it after 3 seconds.
+    const actualDelay = delay === 0 ? 800 : delay;
+
     const timer = setTimeout(() => {
+      // 1. Check if user already did the flow in this session/lifetime
+      const hasVisitedContribution = localStorage.getItem(
+        "has_visited_contribution"
+      );
+
+      // If flag is true, do NOT show
+      if (hasVisitedContribution === "true") {
+        return;
+      }
+
+      // If flag is false or not set, SHOW (User requirements: "If ... not set or is false, show the modal")
       setOpen(true);
-    }, 2000);
+    }, actualDelay);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [delay]);
 
   const handleContribute = () => {
     setOpen(false);
@@ -43,14 +58,28 @@ export default function ContributionModal() {
             <Sparkles className="w-8 h-8 text-[#005DAA] cursor-pointer" />
           </div>
 
-          <DialogHeader className="mb-6 space-y-3 text-center">
-            <DialogTitle className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-[#005DAA] to-[#00C8B3] leading-tight text-center">
-              Unlock Your Potential
-            </DialogTitle>
-            <DialogDescription className="text-base text-gray-600 max-w-sm mx-auto text-center">
-              Ready to make an impact? Join our community of contributors and
-              help shape the future of pay transparency.
-            </DialogDescription>
+          <DialogHeader className="mb-6 space-y-4 text-center">
+            <div className="space-y-4">
+              <DialogDescription className="text-base text-gray-600 max-w-sm mx-auto text-center font-medium">
+                Want to anonymously contribute your responses to help improve
+                accuracy for everyone using COMPanion?
+              </DialogDescription>
+
+              <ul className="text-sm text-gray-500 space-y-2 flex flex-col items-center">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00C8B3]" />
+                  No names or contact information
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00C8B3]" />
+                  Used only in aggregate
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00C8B3]" />
+                  Completely optional
+                </li>
+              </ul>
+            </div>
           </DialogHeader>
 
           <DialogFooter className="flex-col sm:flex-col gap-3 w-full">
@@ -58,14 +87,14 @@ export default function ContributionModal() {
               onClick={handleContribute}
               className="w-full bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white font-semibold py-6 rounded-xl text-lg shadow-lg hover:shadow-xl hover:brightness-110 transition-all duration-300 cursor-pointer"
             >
-              Become a Contributor
+              Contribute Anonymously
             </Button>
             <Button
               variant="ghost"
               onClick={() => setOpen(false)}
               className="w-full text-gray-500 border border-gray-500 hover:text-gray-900 py-4 hover:bg-transparent hover:border-gray-900 font-medium cursor-pointer"
             >
-              Maybe Later
+              Skip for Now
             </Button>
           </DialogFooter>
         </div>
