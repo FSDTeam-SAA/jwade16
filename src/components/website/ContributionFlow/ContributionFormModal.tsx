@@ -31,12 +31,11 @@ export default function ContributionFormModal({
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
+    if (!data.companyName.trim())
+      newErrors.companyName = "Company name is required";
     if (!data.jobTitle.trim()) newErrors.jobTitle = "Job title is required";
-    if (!data.baseSalary.trim())
-      newErrors.baseSalary = "Base salary is required";
     if (!data.location.trim()) newErrors.location = "Location is required";
-    if (!data.yearsOfExperience.trim())
-      newErrors.yearsOfExperience = "Experience is required";
+    if (!data.jobLevel.trim()) newErrors.jobLevel = "Job level is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,12 +43,13 @@ export default function ContributionFormModal({
 
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
-    if (!data.companyName.trim())
-      newErrors.companyName = "Company name is required";
+    if (!data.baseSalary.trim())
+      newErrors.baseSalary = "Base salary is required";
     if (!data.annualBonus.trim())
       newErrors.annualBonus = "Bonus amount is required";
     if (!data.equity.trim()) newErrors.equity = "Equity is required";
-    if (!data.jobLevel.trim()) newErrors.jobLevel = "Job level is required";
+    if (!data.yearsOfExperience.trim())
+      newErrors.yearsOfExperience = "Experience is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -65,17 +65,25 @@ export default function ContributionFormModal({
   const handleSubmit = () => {
     if (validateStep2()) {
       console.log("Contribution Data Submitted:", data);
+
+      // Success message show koranor jonno state
       setShowSuccess(true);
 
-      // Simulate API call/processing
+      // Store update
+      useContributionStore.getState().setHasContributed(true);
+
+      // 3 second pore next action
       setTimeout(() => {
-        setShowSuccess(false);
-        onOpenChange(false);
-        reset();
-        setStep(1);
-        setErrors({});
-        router.push("/");
-      }, 3000);
+        setShowSuccess(false);  
+        onOpenChange(false);  
+        reset();  
+        setStep(1);  
+        setErrors({}); 
+        localStorage.setItem("has_visited_contribution", "true"); 
+
+        // Success message dekhar por score page e redirect
+        router.push("/score");
+      }, 3000); 
     }
   };
 
@@ -164,6 +172,29 @@ export default function ContributionFormModal({
               <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
                 <div className="grid gap-2">
                   <Label
+                    htmlFor="companyName"
+                    className="text-gray-700 font-medium"
+                  >
+                    Company Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="companyName"
+                    name="companyName"
+                    value={data.companyName}
+                    onChange={handleChange}
+                    placeholder="e.g. Acme Corp"
+                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
+                      errors.companyName
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-[#005DAA]"
+                    }`}
+                  />
+                  {errors.companyName && (
+                    <p className="text-red-500 text-xs">{errors.companyName}</p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label
                     htmlFor="jobTitle"
                     className="text-gray-700 font-medium"
                   >
@@ -187,10 +218,70 @@ export default function ContributionFormModal({
                 </div>
                 <div className="grid gap-2">
                   <Label
+                    htmlFor="location"
+                    className="text-gray-700 font-medium"
+                  >
+                    Location (City / State){" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="location"
+                    name="location"
+                    value={data.location}
+                    onChange={handleChange}
+                    placeholder="e.g. New York, NY"
+                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
+                      errors.location
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-[#005DAA]"
+                    }`}
+                  />
+                  {errors.location && (
+                    <p className="text-red-500 text-xs">{errors.location}</p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="jobLevel"
+                    className="text-gray-700 font-medium"
+                  >
+                    Job Level (e.g., L5, Senior){" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="jobLevel"
+                    name="jobLevel"
+                    value={data.jobLevel}
+                    onChange={handleChange}
+                    placeholder="e.g. L5, Senior"
+                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
+                      errors.jobLevel
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-[#00C8B3]"
+                    }`}
+                  />
+                  {errors.jobLevel && (
+                    <p className="text-red-500 text-xs">{errors.jobLevel}</p>
+                  )}
+                </div>
+                <Button
+                  onClick={handleNext}
+                  className="w-full bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white h-12 cursor-pointer rounded-xl font-semibold shadow-lg hover:shadow-xl hover:opacity-90 transition-all duration-200 mt-2"
+                >
+                  Next Step
+                </Button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
+                <div className="grid gap-2">
+                  <Label
                     htmlFor="baseSalary"
                     className="text-gray-700 font-medium"
                   >
-                    Base Salary ($) <span className="text-red-500">*</span>
+                    Base Salary (e.g., 90,000){" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="baseSalary"
@@ -211,25 +302,49 @@ export default function ContributionFormModal({
                 </div>
                 <div className="grid gap-2">
                   <Label
-                    htmlFor="location"
+                    htmlFor="annualBonus"
                     className="text-gray-700 font-medium"
                   >
-                    Location (City) <span className="text-red-500">*</span>
+                    Annual Bonus (e.g., 2,000){" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    id="location"
-                    name="location"
-                    value={data.location}
+                    id="annualBonus"
+                    name="annualBonus"
+                    value={data.annualBonus}
                     onChange={handleChange}
-                    placeholder="e.g. New York, NY"
+                    placeholder="e.g. 20000"
+                    type="number"
                     className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
-                      errors.location
+                      errors.annualBonus
                         ? "border-red-500 focus-visible:ring-red-500"
-                        : "focus-visible:ring-[#005DAA]"
+                        : "focus-visible:ring-[#00C8B3]"
                     }`}
                   />
-                  {errors.location && (
-                    <p className="text-red-500 text-xs">{errors.location}</p>
+                  {errors.annualBonus && (
+                    <p className="text-red-500 text-xs">{errors.annualBonus}</p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="equity" className="text-gray-700 font-medium">
+                    Equity (e.g., 10,000 RSUs){" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="equity"
+                    name="equity"
+                    value={data.equity}
+                    onChange={handleChange}
+                    placeholder="e.g. 50000"
+                    type="number"
+                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
+                      errors.equity
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-[#00C8B3]"
+                    }`}
+                  />
+                  {errors.equity && (
+                    <p className="text-red-500 text-xs">{errors.equity}</p>
                   )}
                 </div>
                 <div className="grid gap-2">
@@ -256,108 +371,6 @@ export default function ContributionFormModal({
                     <p className="text-red-500 text-xs">
                       {errors.yearsOfExperience}
                     </p>
-                  )}
-                </div>
-                <Button
-                  onClick={handleNext}
-                  className="w-full bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white h-12 cursor-pointer rounded-xl font-semibold shadow-lg hover:shadow-xl hover:opacity-90 transition-all duration-200 mt-2"
-                >
-                  Next Step
-                </Button>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="companyName"
-                    className="text-gray-700 font-medium"
-                  >
-                    Company Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="companyName"
-                    name="companyName"
-                    value={data.companyName}
-                    onChange={handleChange}
-                    placeholder="e.g. Acme Corp"
-                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
-                      errors.companyName
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : "focus-visible:ring-[#00C8B3]"
-                    }`}
-                  />
-                  {errors.companyName && (
-                    <p className="text-red-500 text-xs">{errors.companyName}</p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="annualBonus"
-                    className="text-gray-700 font-medium"
-                  >
-                    Annual Bonus Amount <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="annualBonus"
-                    name="annualBonus"
-                    value={data.annualBonus}
-                    onChange={handleChange}
-                    placeholder="e.g. 20000"
-                    type="number"
-                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
-                      errors.annualBonus
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : "focus-visible:ring-[#00C8B3]"
-                    }`}
-                  />
-                  {errors.annualBonus && (
-                    <p className="text-red-500 text-xs">{errors.annualBonus}</p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="equity" className="text-gray-700 font-medium">
-                    Equity (Rsus/Option) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="equity"
-                    name="equity"
-                    value={data.equity}
-                    onChange={handleChange}
-                    placeholder="e.g. 50000"
-                    type="number"
-                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
-                      errors.equity
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : "focus-visible:ring-[#00C8B3]"
-                    }`}
-                  />
-                  {errors.equity && (
-                    <p className="text-red-500 text-xs">{errors.equity}</p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="jobLevel"
-                    className="text-gray-700 font-medium"
-                  >
-                    Job Level <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="jobLevel"
-                    name="jobLevel"
-                    value={data.jobLevel}
-                    onChange={handleChange}
-                    placeholder="e.g. L5, Senior"
-                    className={`h-12 border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white transition-all ${
-                      errors.jobLevel
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : "focus-visible:ring-[#00C8B3]"
-                    }`}
-                  />
-                  {errors.jobLevel && (
-                    <p className="text-red-500 text-xs">{errors.jobLevel}</p>
                   )}
                 </div>
                 <div className="flex items-center justify-center gap-4 mt-6">

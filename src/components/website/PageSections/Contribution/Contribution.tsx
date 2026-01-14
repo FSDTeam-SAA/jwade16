@@ -67,7 +67,7 @@ export default function Contribution() {
             </Button>
 
             {/* Secondary CTA */}
-            <Link href="/" className="w-full sm:w-auto">
+            <Link href="/score" className="w-full sm:w-auto">
               <Button
                 variant="ghost"
                 size="lg"

@@ -180,7 +180,7 @@ export default function QuestionnairePage() {
         );
       }
       // 2️ Navigate to /score
-      router.push(`/score`);
+      router.push(`/score?email=${encodeURIComponent(email)}`);
     } catch (error) {
       console.error("Failed to submit:", error);
       // Optional: Show error toast here
