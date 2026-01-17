@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { usePostContribution } from "@/lib/hooks/useContribution";
 import { useContributionStore } from "@/store/useContributionStore";
 import { CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ export default function ContributionFormModal({
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const { mutateAsync: postContribution } = usePostContribution();
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
@@ -64,9 +66,19 @@ export default function ContributionFormModal({
 
   const handleSubmit = () => {
     if (validateStep2()) {
-      console.log("Contribution Data Submitted:", data);
+      // 🔥 string → number convert
+      const payload = {
+        ...data,
+        baseSalary: Number(data.baseSalary),
+        annualBonus: Number(data.annualBonus),
+        yearsOfExperience: Number(data.yearsOfExperience),
+      };
 
-      // Success message show koranor jonno state
+      console.log("Contribution Data Submitted:", payload);
+
+      postContribution(payload);
+
+      // Success message show
       setShowSuccess(true);
 
       // Store update
@@ -74,16 +86,16 @@ export default function ContributionFormModal({
 
       // 3 second pore next action
       setTimeout(() => {
-        setShowSuccess(false);  
-        onOpenChange(false);  
-        reset();  
-        setStep(1);  
-        setErrors({}); 
-        localStorage.setItem("has_visited_contribution", "true"); 
+        setShowSuccess(false);
+        onOpenChange(false);
+        reset();
+        setStep(1);
+        setErrors({});
+        localStorage.setItem("has_visited_contribution", "true");
 
-        // Success message dekhar por score page e redirect
+        // Redirect to score page
         router.push("/score");
-      }, 3000); 
+      }, 3000);
     }
   };
 
@@ -245,7 +257,7 @@ export default function ContributionFormModal({
                     htmlFor="jobLevel"
                     className="text-gray-700 font-medium"
                   >
-                    Job Level (e.g., L5, Senior){" "}
+                    Job Level (e.g. L5, Senior){" "}
                     <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -280,7 +292,7 @@ export default function ContributionFormModal({
                     htmlFor="baseSalary"
                     className="text-gray-700 font-medium"
                   >
-                    Base Salary (e.g., 90,000){" "}
+                    Base Salary (e.g. 90,000){" "}
                     <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -305,7 +317,7 @@ export default function ContributionFormModal({
                     htmlFor="annualBonus"
                     className="text-gray-700 font-medium"
                   >
-                    Annual Bonus (e.g., 2,000){" "}
+                    Annual Bonus (e.g. 2000){" "}
                     <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -327,7 +339,7 @@ export default function ContributionFormModal({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="equity" className="text-gray-700 font-medium">
-                    Equity (e.g., 10,000 RSUs){" "}
+                    Equity (e.g. 10,000 RSUs){" "}
                     <span className="text-red-500">*</span>
                   </Label>
                   <Input
