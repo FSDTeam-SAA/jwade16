@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Heart } from "lucide-react";
+import { ArrowRight, CheckCircle2, DollarSign, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
@@ -20,7 +20,7 @@ export default function Contribution() {
         <div className="p-8 sm:p-12 text-center">
           {/* Icon/Decoration */}
           <div className="mx-auto w-20 h-20 bg-linear-to-br from-[#005DAA]/10 to-[#00C8B3]/10 rounded-full flex items-center justify-center mb-8">
-            <Heart className="w-10 h-10 text-[#005DAA]" />
+            <DollarSign className="w-10 h-10 text-[#005DAA]" />
           </div>
 
           {/* Headline */}
