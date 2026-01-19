@@ -12,7 +12,6 @@ import {
 import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useContributionStore } from "@/store/useContributionStore";
 
 export default function ContributionModal({
   delay = 2000,
@@ -50,7 +49,8 @@ export default function ContributionModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl">
+      <DialogTitle className="sr-only">Contribute Anonymously</DialogTitle>
+      <DialogContent className="sm:max-w-120 p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl">
         <div className="absolute inset-0 bg-linear-to-br from-[#005DAA]/5 to-[#00C8B3]/5 pointer-events-none" />
 
         <div className="flex flex-col items-center text-center p-8 sm:p-10 relative z-10">
