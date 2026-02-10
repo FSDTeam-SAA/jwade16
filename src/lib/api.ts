@@ -64,7 +64,7 @@ export async function postCheckoutSession(data: CheckoutSessionPayload) {
 // get full report
 export async function getFullReport(score: number) {
   try {
-    const res = await api.get(`/paypower?score=${score}`);
+    const res = await api.get(`/paypower/paid?score=${score}`);
     console.log(res.data);
     return res.data;
   } catch (err) {

@@ -8,8 +8,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
-import { TrendingUp, CheckCircle, Shield, Star, Zap } from "lucide-react";
+import {
+  TrendingUp,
+  CheckCircle,
+  Shield,
+  Star,
+  Zap,
+  Loader2,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { useFreeFullReport } from "@/lib/hooks/useFullReport";
 
 interface FreeReportModalProps {
   open: boolean;
@@ -20,16 +28,21 @@ export default function FreeReportModal({
   open,
   onOpenChange,
 }: FreeReportModalProps) {
-  const { payPowerScore, marketGapDetected } = useQuestionnaireStore();
+  const { payPowerScore } = useQuestionnaireStore();
+  const { data, isLoading, isError } = useFreeFullReport(payPowerScore ?? 0);
 
-  const score = payPowerScore ?? 0;
+  const reportData = data?.data;
+  const score = reportData?.score ?? payPowerScore ?? 0;
 
-  const marketPosition =
-    score > 70 ? "Strong" : score > 40 ? "Moderate" : "Action Required";
+  let marketPositionValue = "Action Required";
+  if (score > 70) marketPositionValue = "Strong";
+  else if (score > 40) marketPositionValue = "Moderate";
+
+  const marketPosition = reportData?.headline || marketPositionValue;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl">
+      <DialogContent className="sm:max-w-2xl p-0 border-none shadow-2xl bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
         <div className="absolute inset-0 bg-linear-to-br from-[#005DAA]/5 to-[#00C8B3]/5 pointer-events-none" />
 
         <div className="relative z-10">
@@ -92,12 +105,11 @@ export default function FreeReportModal({
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Market Position: {marketPosition}
+                  {marketPosition}
                 </h3>
                 <p className="text-gray-600">
-                  {marketGapDetected
-                    ? `We've identified a potential ${marketGapDetected} gap in your current compensation compared to market standards.`
-                    : "Your compensation is currently aligned with market averages, but there may still be room for optimization."}
+                  {reportData?.description ||
+                    "Analyzing your current compensation compared to market standards..."}
                 </p>
               </div>
             </div>
@@ -139,34 +151,41 @@ export default function FreeReportModal({
                 Key Next Steps
               </h4>
               <ul className="space-y-3">
-                <li className="flex gap-3 text-sm text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Compare your base salary against the updated 2026 industry
-                  benchmarks.
-                </li>
-                <li className="flex gap-3 text-sm text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Review your equity vesting schedule for potential
-                  re-negotiation points.
-                </li>
-                <li className="flex gap-3 text-sm text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Document recent impact metrics to prepare for your next
-                  compensation review.
-                </li>
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-gray-400 py-4">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading recommendations...</span>
+                  </div>
+                ) : isError ? (
+                  <p className="text-sm text-red-500">
+                    Failed to load recommendations.
+                  </p>
+                ) : (
+                  reportData?.recommendedActions?.map((action: string) => (
+                    <li
+                      key={action}
+                      className="flex gap-3 text-sm text-gray-600"
+                    >
+                      <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                      {action}
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
+            {reportData?.disclaimer && (
+              <p className="mt-4 text-[14px] text-gray-400 italic">
+                {reportData.disclaimer}
+              </p>
+            )}
           </div>
 
-          <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <p className="text-sm text-gray-500 text-center sm:text-left">
-              Want the full granular breakdown and exact scripts?
-            </p>
+          <div className="p-3 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-center">
             <button
               onClick={() => onOpenChange(false)}
               className="px-8 py-3 bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer whitespace-nowrap"
             >
-             Close
+              Close
             </button>
           </div>
         </div>
