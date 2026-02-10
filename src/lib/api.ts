@@ -72,3 +72,16 @@ export async function getFullReport(score: number) {
     throw new Error("Failed to fetch all roles");
   }
 }
+
+
+// get free pay-power report
+export async function getFreePayPowerReport(score: number) {
+  try {
+    const res = await api.get(`/paypower?score=${score}`);
+    console.log(res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    throw new Error("Failed to fetch all roles");
+  }
+}

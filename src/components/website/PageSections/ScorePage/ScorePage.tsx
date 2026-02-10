@@ -16,6 +16,7 @@ import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
 import Link from "next/link";
 import ContributionModal from "@/components/website/ContributionModal";
+import FreeReportModal from "@/components/website/FreeReportModal";
 
 function ScoreContent() {
   const router = useRouter();
@@ -26,7 +27,6 @@ function ScoreContent() {
     setEmail,
     payPowerScore,
     marketGapDetected,
-    answers,
     userSelectionId,
   } = useQuestionnaireStore();
   const checkoutMutation = usePostCheckoutSession();
@@ -34,6 +34,7 @@ function ScoreContent() {
   const email = searchParamEmail || storeEmail;
 
   const [isAccepted, setIsAccepted] = useState(false);
+  const [showFreeReport, setShowFreeReport] = useState(false);
 
   useEffect(() => {
     // 1. If we have email in store but NOT in URL, update URL
@@ -78,7 +79,7 @@ function ScoreContent() {
           toast.error("Failed to create checkout session");
           console.error("Checkout error:", error);
         },
-      }
+      },
     );
   };
 
@@ -100,7 +101,7 @@ function ScoreContent() {
           toast.error("Failed to create checkout session");
           console.error("Checkout error:", error);
         },
-      }
+      },
     );
   };
 
@@ -329,12 +330,30 @@ function ScoreContent() {
             ))}
           </motion.div>
 
+          {/* Free Report Button */}
+          <div className="flex justify-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.65 }}
+              className=""
+            >
+              <button
+                onClick={() => setShowFreeReport(true)}
+                className="py-4 px-2 bg-white border-2 border-[#00C8B3] text-[#005DAA] font-bold rounded-2xl shadow-sm hover:shadow-md hover:bg-[#00C8B3]/5 transition-all cursor-pointer flex items-center justify-center gap-2 group my-4"
+              >
+                <FileText className="w-5 h-5 text-[#00C8B3] group-hover:scale-110 transition-transform" />
+                <span>See Your Free PayPower Report</span>
+              </button>
+            </motion.div>
+          </div>
+
           {/* Consent Checkbox */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="my-6 p-4 rounded-2xl bg-gray-50 border border-gray-100"
+            className="mb-6 p-4 rounded-2xl bg-gray-50 border border-gray-100"
           >
             <label className="flex gap-3 cursor-pointer group">
               <div className="relative flex items-center mt-1">
@@ -470,6 +489,7 @@ function ScoreContent() {
       </footer>
 
       <ContributionModal delay={0} />
+      <FreeReportModal open={showFreeReport} onOpenChange={setShowFreeReport} />
     </div>
   );
 }
