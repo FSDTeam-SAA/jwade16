@@ -134,7 +134,7 @@ export default function FullReport() {
           toast.error("Failed to create checkout session");
           console.error("Checkout error:", error);
         },
-      }
+      },
     );
   };
 
@@ -339,40 +339,43 @@ export default function FullReport() {
                         {/* Score Analysis */}
                         <div className="flex-1 text-center md:text-left">
                           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                            Pay Power: {fullReport.payPower}
+                            {fullReport.label || "Pay Power Score"}
                           </h2>
-                          {/* <p className="text-gray-600 mb-4 text-lg">
-                            Score Range:{" "}
-                            <span className="font-semibold text-[#005DAA]">
-                              {fullReport.scoreRange}
-                            </span>
-                          </p> */}
+                          {fullReport.breakdown?.score_range && (
+                            <p className="text-gray-600 mb-4 text-lg">
+                              Score Range:{" "}
+                              <span className="font-semibold text-[#005DAA]">
+                                {fullReport.breakdown.score_range}
+                              </span>
+                            </p>
+                          )}
                           <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                             <span className="inline-flex items-center gap-1 bg-blue-50 text-[#005DAA] px-3 py-1 rounded-full text-sm font-medium">
                               <Target className="w-4 h-4" />
-                              Ready for action
+                              {fullReport.subtitle || "Ready for action"}
                             </span>
                           </div>
                         </div>
                       </div>
                     </motion.div>
 
-                    {/* Uncomfortable Truth */}
+                    {/* Uncomfortable Truth / What This Means */}
                     <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-3 bg-red-50 rounded-xl">
                           <AlertTriangle className="w-6 h-6 text-red-500" />
                         </div>
                         <h2 className="text-xl font-bold text-gray-800">
-                          The Uncomfortable Truth
+                          What This Means
                         </h2>
                       </div>
-                      <p className="text-gray-700 leading-relaxed text-lg">
-                        {fullReport.uncomfortableTruth}
+                      <p className="text-gray-700 whitespace-pre-line leading-relaxed text-lg">
+                        {fullReport.breakdown?.what_this_means ||
+                          fullReport.description}
                       </p>
                     </motion.div>
 
-                    {/* What This Usually Looks Like */}
+                    {/* Typical Signs */}
                     <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-3 bg-blue-50 rounded-xl">
@@ -383,37 +386,39 @@ export default function FullReport() {
                         </h2>
                       </div>
                       <ul className="space-y-4">
-                        {fullReport.whatThisUsuallyLooksLike?.map(
-                          (item: string, idx: number) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-3 text-gray-700"
-                            >
-                              <div className="mt-1.5 w-2 h-2 rounded-full bg-[#00C8B3] flex-shrink-0" />
-                              <span>{item}</span>
-                            </li>
-                          )
-                        )}
+                        {(
+                          fullReport.breakdown?.typical_signs ||
+                          fullReport.whatThisUsuallyLooksLike
+                        )?.map((item: string, idx: number) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-3 text-gray-700"
+                          >
+                            <div className="mt-1.5 w-2 h-2 rounded-full bg-[#00C8B3] flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-8 mb-8">
-                      {/* What Most People Get Wrong */}
+                      {/* What Most People Get Wrong / Common Mistake */}
                       <motion.div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="p-3 bg-amber-50 rounded-xl">
                             <Lightbulb className="w-6 h-6 text-amber-500" />
                           </div>
                           <h2 className="text-xl font-bold text-gray-800">
-                            What Most People Get Wrong
+                            Common Mistake
                           </h2>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">
-                          {fullReport.whatMostPeopleGetWrong}
+                        <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                          {fullReport.breakdown?.common_mistake ||
+                            fullReport.whatMostPeopleGetWrong}
                         </p>
                       </motion.div>
 
-                      {/* Real Risk */}
+                      {/* The Real Risk / Long Term Consequence */}
                       <motion.div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="p-3 bg-orange-50 rounded-xl">
@@ -423,8 +428,9 @@ export default function FullReport() {
                             The Real Risk
                           </h2>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">
-                          {fullReport.realRisk}
+                        <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                          {fullReport.breakdown?.long_term_consequence ||
+                            fullReport.realRisk}
                         </p>
                       </motion.div>
                     </div>
@@ -439,13 +445,32 @@ export default function FullReport() {
                           What Moves The Score
                         </h2>
                       </div>
-                      <p className="text-white/90 leading-relaxed text-lg">
-                        {fullReport.whatMovesTheScore}
-                      </p>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {Array.isArray(
+                          fullReport.breakdown?.what_moves_the_score,
+                        ) ? (
+                          fullReport.breakdown.what_moves_the_score.map(
+                            (item: string, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex gap-3 text-white/90"
+                              >
+                                <CheckCircle className="w-5 h-5 text-[#00C8B3] shrink-0" />
+                                <span className="text-lg">{item}</span>
+                              </div>
+                            ),
+                          )
+                        ) : (
+                          <p className="text-white/90 leading-relaxed text-lg">
+                            {fullReport.whatMovesTheScore}
+                          </p>
+                        )}
+                      </div>
                     </motion.div>
 
                     {/* Next Move / CTA */}
-                    {fullReport.nextMove && (
+                    {(fullReport.nextMove ||
+                      fullReport.breakdown?.strategic_next_step) && (
                       <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="p-3 bg-green-50 rounded-xl">
@@ -456,17 +481,19 @@ export default function FullReport() {
                           </h2>
                         </div>
                         <div className="space-y-6">
-                          <div className="flex items-start gap-4">
-                            <Clock className="w-5 h-5 text-gray-400 mt-1" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                Timeframe
-                              </p>
-                              <p className="text-gray-800 font-medium">
-                                {fullReport.nextMove.timeframe}
-                              </p>
+                          {fullReport.nextMove?.timeframe && (
+                            <div className="flex items-start gap-4">
+                              <Clock className="w-5 h-5 text-gray-400 mt-1" />
+                              <div>
+                                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                  Timeframe
+                                </p>
+                                <p className="text-gray-800 font-medium">
+                                  {fullReport.nextMove.timeframe}
+                                </p>
+                              </div>
                             </div>
-                          </div>
+                          )}
                           <div className="flex items-start gap-4">
                             <CheckCircle className="w-5 h-5 text-gray-400 mt-1" />
                             <div>
@@ -474,22 +501,30 @@ export default function FullReport() {
                                 Action
                               </p>
                               <p className="text-gray-800 font-medium">
-                                {fullReport.nextMove.action}
+                                {fullReport.breakdown?.strategic_next_step ||
+                                  fullReport.nextMove?.action}
                               </p>
                             </div>
                           </div>
-                          {fullReport.nextMove.ctaButton && (
+                          {(fullReport.nextMove?.ctaButton ||
+                            !fullReport.nextMove) && (
                             <div className="pt-4">
                               <button
                                 onClick={handleSession}
                                 className="bg-[#00C8B3] hover:bg-[#00b09e] text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-[#00C8B3]/20 transition-all transform hover:-translate-y-1 cursor-pointer"
                               >
-                                {fullReport.nextMove.ctaButton}
+                                {fullReport.nextMove?.ctaButton ||
+                                  "Book Strategy Session"}
                               </button>
                             </div>
                           )}
                         </div>
                       </motion.div>
+                    )}
+                    {fullReport.disclaimer && (
+                      <p className="mb-8 text-xs text-gray-400 italic text-center">
+                        {fullReport.disclaimer}
+                      </p>
                     )}
                   </>
                 ) : (
