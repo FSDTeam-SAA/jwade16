@@ -17,6 +17,7 @@ import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
 import Link from "next/link";
 import ContributionModal from "@/components/website/ContributionModal";
 import FreeReportModal from "@/components/website/FreeReportModal";
+import { useFreeFullReport } from "@/lib/hooks/useFullReport";
 
 function ScoreContent() {
   const router = useRouter();
@@ -104,6 +105,21 @@ function ScoreContent() {
       },
     );
   };
+
+
+    // const { payPowerScore } = useQuestionnaireStore();
+    const { data, isLoading, isError } = useFreeFullReport(payPowerScore ?? 0);
+  
+    const reportData = data?.data;
+    // const score = reportData?.score ?? payPowerScore ?? 0;
+  
+    let marketPositionValue = "Action Required";
+    if (score > 70) marketPositionValue = "Strong";
+    else if (score > 40) marketPositionValue = "Moderate";
+  
+    const marketPosition = reportData?.headline || marketPositionValue;
+
+    // console.log(marketPosition)
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4 relative">
@@ -234,7 +250,7 @@ function ScoreContent() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-xl mb-2">
-                    Potential Market Gap Detected: {belowMarket}% Below Market
+                    {marketPosition}
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
                     Based on your role and location, your contributions may not
