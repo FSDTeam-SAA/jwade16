@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { Check, Search } from "lucide-react";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import { useRouter } from "next/navigation";
-import { useGetRole } from "@/lib/hooks/useRole";
+import { useGetRole, usePostOccupationMatch } from "@/lib/hooks/useRole";
 import { usePostPayPower } from "@/lib/hooks/usePayPower";
 import { useState } from "react";
 import Link from "next/link";
+import { Loader2, Sparkles } from "lucide-react";
 
 interface Question {
   id: string;
@@ -30,6 +31,8 @@ export default function QuestionnairePage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [aiMatchResult, setAiMatchResult] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const questions: Question[] = [
     {
@@ -146,12 +149,42 @@ export default function QuestionnairePage() {
     if (currentStep < questions.length) {
       setCurrentStep(currentStep + 1);
       setSearchTerm("");
+      setAiMatchResult(null);
+      setAiError(null);
     }
   };
 
   const { data: roleData, isLoading: roleLoading } = useGetRole();
   const { mutateAsync: postPayPower, isPending: isSubmitting } =
     usePostPayPower();
+  const { mutateAsync: matchOccupation, isPending: isMatching } =
+    usePostOccupationMatch();
+
+  const handleAIMatch = async () => {
+    if (!searchTerm.trim()) return;
+    setAiMatchResult(null);
+    setAiError(null);
+
+    try {
+      const response = await matchOccupation({ text: searchTerm });
+      if (response && response.success && response.data) {
+        const matched =
+          response.data.matchedTitle ||
+          response.data.title ||
+          (typeof response.data === "string" ? response.data : null);
+        if (matched) {
+          setAiMatchResult(matched);
+        } else {
+          setAiMatchResult(""); // empty string signals "no result found"
+        }
+      } else {
+        setAiMatchResult("");
+      }
+    } catch (error) {
+      console.error("AI Match failed:", error);
+      setAiError("Something went wrong. Please try again.");
+    }
+  };
 
   const handleEmailSubmit = async () => {
     if (!email.trim()) return;
@@ -176,7 +209,7 @@ export default function QuestionnairePage() {
         setScoreResults(
           response.data.payPowerScore,
           response.data.marketGapDetected,
-          response.data.user_selection_id
+          response.data.user_selection_id,
         );
       }
       // 2️ Navigate to /score
@@ -301,7 +334,7 @@ export default function QuestionnairePage() {
     // Filter based on search term
     if (searchTerm.trim()) {
       displayedOptions = sourceOptions.filter((opt: string) =>
-        opt.toLowerCase().includes(searchTerm.toLowerCase())
+        opt.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     } else {
       displayedOptions = sourceOptions;
@@ -428,17 +461,87 @@ export default function QuestionnairePage() {
           )}
           {/* SEARCH BAR FOR ROLE */}
           {q.id === "role" && (
-            <div className="mb-4 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search for your role..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full text-left p-3 pl-10 border-2 border-gray-200 rounded-xl
-                  focus:border-[#005DAA] focus:ring-1 focus:ring-[#005DAA]/50 outline-none
-                  transition duration-200 font-medium text-gray-800"
-              />
+            <div className="mb-4">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search for your role..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setAiMatchResult(null);
+                      setAiError(null);
+                    }}
+                    className="w-full text-left p-3 pl-10 border-2 border-gray-200 rounded-xl
+                      focus:border-[#005DAA] focus:ring-1 focus:ring-[#005DAA]/50 outline-none
+                      transition duration-200 font-medium text-gray-800"
+                  />
+                </div>
+                <button
+                  onClick={handleAIMatch}
+                  disabled={!searchTerm.trim() || isMatching}
+                  className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-[#005DAA] to-[#00C8B3]
+                    text-white rounded-xl font-semibold shadow-md hover:opacity-90 transition-all
+                    disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {isMatching ? (
+                    <Loader2 className="w-4 h-4 animate-spin cursor-not-allowed" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 cursor-pointer" />
+                  )}
+                  {isMatching ? "Matching..." : " AI Selected Insight"}
+                </button>
+              </div>
+
+              {/* ERROR TOAST */}
+              {aiError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-medium"
+                >
+                  <span>⚠️</span> {aiError}
+                </motion.div>
+              )}
+
+              {/* AI MATCH RESULT CARD */}
+              {aiMatchResult !== null && !aiError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2"
+                >
+                  {aiMatchResult === "" ? (
+                    <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 italic">
+                      No matching occupations found.
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#00C8B3]" />
+                        AI suggested match — click to select
+                      </p>
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => handleSelect(aiMatchResult)}
+                        className="w-full text-left px-4 py-3.5 border-2 border-[#00C8B3] bg-gradient-to-r from-[#005DAA]/5 to-[#00C8B3]/10
+                          rounded-xl font-semibold text-gray-800 hover:from-[#005DAA]/10 hover:to-[#00C8B3]/20
+                          transition duration-200 flex items-center justify-between gap-2 cursor-pointer shadow-sm"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-[#00C8B3] shrink-0" />
+                          {aiMatchResult}
+                        </span>
+                        <span className="text-xs text-[#005DAA] font-medium bg-[#005DAA]/10 px-2.5 py-1 rounded-full shrink-0">
+                          Select
+                        </span>
+                      </motion.button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </div>
           )}
 

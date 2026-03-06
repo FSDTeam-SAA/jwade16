@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
 import {
-  TrendingUp,
   CheckCircle,
-  Shield,
   Star,
-  Zap,
   Loader2,
+  BarChart2,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useFreeFullReport } from "@/lib/hooks/useFullReport";
@@ -38,37 +38,48 @@ export default function FreeReportModal({
   if (score > 70) marketPositionValue = "Strong";
   else if (score > 40) marketPositionValue = "Moderate";
 
-  const marketPosition = reportData?.headline || marketPositionValue;
+  const headline =
+    reportData?.headline || `Pay Power Potential: ${marketPositionValue}`;
+  const supportingLine =
+    reportData?.supportingLine || `Your Pay Power Score™ is ${score}.`;
+  const staticDescription = reportData?.staticDescription;
+  const aiDescription = reportData?.description;
+
+  // Split AI description into paragraphs for clean rendering
+  const aiParagraphs = aiDescription
+    ? aiDescription.split(/\n+/).filter((p: string) => p.trim())
+    : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl p-0 border-none shadow-2xl bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
-        <div className="absolute inset-0 bg-linear-to-br from-[#005DAA]/5 to-[#00C8B3]/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-[#005DAA]/5 to-[#00C8B3]/5 pointer-events-none rounded-3xl" />
 
         <div className="relative z-10">
-          <div className="bg-linear-to-r from-[#005DAA] to-[#00C8B3] p-8 text-white relative overflow-hidden">
+          {/* ── SECTION 1: Header gradient band ── */}
+          <div className="bg-linear-to-r from-[#005DAA] to-[#00C8B3] p-8 text-white relative overflow-hidden rounded-t-3xl">
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Star className="w-32 h-32" />
             </div>
             <DialogHeader>
-              <DialogTitle className="text-3xl font-bold mb-2 text-white">
-                Your Free PayPower Summary
+              <DialogTitle className="text-3xl font-bold mb-1 text-white">
+                Your Free PayPower Report
               </DialogTitle>
-              <DialogDescription className="text-white/80 text-lg">
+              <DialogDescription className="text-white/80 text-base">
                 Preliminary analysis of your market position
               </DialogDescription>
             </DialogHeader>
-          </div>
 
-          <div className="p-8">
-            <div className="flex flex-col md:flex-row gap-8 items-center mb-8">
-              <div className="relative flex items-center justify-center w-32 h-32">
+            {/* Score ring + headline row */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 mt-6">
+              {/* Circular score */}
+              <div className="relative flex items-center justify-center w-28 h-28 shrink-0">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle
-                    cx="64"
-                    cy="64"
-                    r="58"
-                    stroke="#f3f4f6"
+                    cx="56"
+                    cy="56"
+                    r="50"
+                    stroke="rgba(255,255,255,0.25)"
                     strokeWidth="8"
                     fill="none"
                   />
@@ -76,114 +87,161 @@ export default function FreeReportModal({
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: score / 100 }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    cx="64"
-                    cy="64"
-                    r="58"
-                    stroke="url(#modalScoreGradient)"
+                    cx="56"
+                    cy="56"
+                    r="50"
+                    stroke="white"
                     strokeWidth="8"
                     fill="none"
                     strokeLinecap="round"
                   />
-                  <defs>
-                    <linearGradient
-                      id="modalScoreGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop offset="0%" stopColor="#005DAA" />
-                      <stop offset="100%" stopColor="#00C8B3" />
-                    </linearGradient>
-                  </defs>
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-3xl font-bold bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text">
+                  <span className="text-3xl font-black text-white">
                     {score}
+                  </span>
+                  <span className="text-white/70 text-xs font-medium">
+                    / 100
                   </span>
                 </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {marketPosition}
+
+              {/* Headline + supporting line */}
+              <div>
+                <h3 className="text-2xl font-extrabold text-white leading-tight mb-1">
+                  {headline}
                 </h3>
-                <p className="text-gray-600">
-                  {reportData?.description ||
-                    "Analyzing your current compensation compared to market standards..."}
+                <p className="text-white/80 text-sm font-medium">
+                  {supportingLine}
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-8">
-              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex gap-4">
-                <div className="bg-white p-2 rounded-lg shadow-sm h-fit">
-                  <TrendingUp className="w-5 h-5 text-blue-500" />
+          {/* ── SECTION 2: Platform Insight (staticDescription) ── */}
+          {(isLoading || staticDescription) && (
+            <div className="px-8 pt-7">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-lg bg-blue-100">
+                  <BarChart2 className="w-4 h-4 text-[#005DAA]" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 text-sm mb-1">
-                    Leverage Check
-                  </h4>
-                  <p className="text-gray-600 text-xs">
-                    Based on your role, you have significant leverage in
-                    performance-based incentives.
-                  </p>
-                </div>
+                <h4 className="font-bold text-gray-900 text-base">
+                  📊 Your PayPower Summary
+                </h4>
               </div>
-              <div className="p-4 rounded-2xl bg-teal-50 border border-teal-100 flex gap-4">
-                <div className="bg-white p-2 rounded-lg shadow-sm h-fit">
-                  <Shield className="w-5 h-5 text-teal-500" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 text-sm mb-1">
-                    Benefit Alignment
-                  </h4>
-                  <p className="text-gray-600 text-xs">
-                    Your current benefits package is{" "}
-                    {score > 60 ? "above" : "at"} the average for your industry.
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Loading summary...</span>
+                  </div>
+                ) : (
+                  <p className="text-gray-700 leading-relaxed text-sm">
+                    {staticDescription}
                   </p>
-                </div>
+                )}
               </div>
             </div>
+          )}
 
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-              <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-amber-500" />
-                Key Next Steps
+          {/* ── SECTION 3: AI-Generated Insight (description) ── */}
+          <div className="px-8 pt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-purple-100">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+              </div>
+              <h4 className="font-bold text-gray-900 text-base">
+                🤖 AI-Generated Career Insight
               </h4>
-              <ul className="space-y-3">
+            </div>
+
+            <div className="border border-purple-200 rounded-2xl overflow-hidden">
+              {/* AI badge banner */}
+              <div className="flex items-center gap-2 bg-purple-50 border-b border-purple-200 px-5 py-3">
+                <Sparkles className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <p className="text-xs text-purple-600 font-medium">
+                  The following insight is automatically generated using AI
+                  based on your answers and career inputs.
+                </p>
+              </div>
+
+              <div className="p-5 space-y-3">
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-gray-400 py-4">
+                  <div className="flex items-center gap-2 text-gray-400">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Loading recommendations...</span>
+                    <span className="text-sm">Generating AI insight...</span>
                   </div>
                 ) : isError ? (
                   <p className="text-sm text-red-500">
-                    Failed to load recommendations.
+                    Failed to load AI insight.
                   </p>
-                ) : (
-                  reportData?.recommendedActions?.map((action: string) => (
-                    <li
-                      key={action}
-                      className="flex gap-3 text-sm text-gray-600"
+                ) : aiParagraphs.length > 0 ? (
+                  aiParagraphs.map((para: string, idx: number) => (
+                    <p
+                      key={idx}
+                      className="text-gray-700 leading-relaxed text-sm"
                     >
-                      <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-                      {action}
-                    </li>
+                      {para}
+                    </p>
                   ))
+                ) : (
+                  <p className="text-gray-500 text-sm italic">
+                    No AI insight available.
+                  </p>
                 )}
-              </ul>
+              </div>
             </div>
-            {reportData?.disclaimer && (
-              <p className="mt-4 text-[14px] text-gray-400 italic">
-                {reportData.disclaimer}
-              </p>
-            )}
           </div>
 
-          <div className="p-3 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-center">
+          {/* ── SECTION 4: Recommended Actions ── */}
+          <div className="px-8 pt-6 pb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-emerald-100">
+                <Zap className="w-4 h-4 text-emerald-600" />
+              </div>
+              <h4 className="font-bold text-gray-900 text-base">
+                ✅ Recommended Actions
+              </h4>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Loading recommendations...</span>
+                </div>
+              ) : isError ? (
+                <p className="text-sm text-red-500">
+                  Failed to load recommendations.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {reportData?.recommendedActions?.map((action: string) => (
+                    <li
+                      key={action}
+                      className="flex gap-3 text-sm text-gray-700"
+                    >
+                      <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{action}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          {reportData?.disclaimer && (
+            <p className="px-8 pb-4 text-[13px] text-gray-400 italic leading-relaxed">
+              {reportData.disclaimer}
+            </p>
+          )}
+
+          {/* Footer */}
+          <div className="px-8 pb-6 pt-2">
             <button
               onClick={() => onOpenChange(false)}
-              className="px-8 py-3 bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all cursor-pointer whitespace-nowrap"
+              className="w-full py-3.5 bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition-all cursor-pointer"
             >
               Close
             </button>

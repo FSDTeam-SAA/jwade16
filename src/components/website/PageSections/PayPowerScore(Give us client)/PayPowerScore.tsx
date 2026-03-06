@@ -498,7 +498,7 @@ export default function PayPowerScore() {
               <button
                 onClick={() =>
                   alert(
-                    "Stripe payment integration coming soon! This will process payment and unlock the full report."
+                    "Stripe payment integration coming soon! This will process payment and unlock the full report.",
                   )
                 }
                 className="bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition"
@@ -515,7 +515,7 @@ export default function PayPowerScore() {
             <button
               onClick={() =>
                 alert(
-                  "Share functionality coming soon! This will let users share their score on social media."
+                  "Share functionality coming soon! This will let users share their score on social media.",
                 )
               }
               className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-lg transition"
@@ -711,7 +711,7 @@ export default function PayPowerScore() {
                 <button
                   onClick={() =>
                     alert(
-                      "Calendly integration coming soon! This will open your booking calendar."
+                      "Calendly integration coming soon! This will open your booking calendar.",
                     )
                   }
                   className="bg-white text-indigo-600 py-4 px-8 rounded-xl font-semibold hover:bg-gray-100 transition inline-block"

@@ -41,6 +41,17 @@ export async function postPayPower(data: PayPowerPayload) {
   }
 }
 
+// post occupation match
+export async function postOccupationMatch(data: { text: string }) {
+  try {
+    const res = await api.post(`/occupations/match`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error matching occupation:", err);
+    throw new Error("Failed to match occupation");
+  }
+}
+
 // checkout page (stripe)
 export interface CheckoutSessionPayload {
   userId?: string | null;
@@ -72,7 +83,6 @@ export async function getFullReport(score: number) {
     throw new Error("Failed to fetch all roles");
   }
 }
-
 
 // get free pay-power report
 export async function getFreePayPowerReport(score: number) {

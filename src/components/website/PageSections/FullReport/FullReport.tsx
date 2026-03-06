@@ -16,12 +16,13 @@ import {
   Lightbulb,
   ArrowRight,
   MapPin,
+  Sparkles,
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import Link from "next/link";
-import { useFullReport } from "@/lib/hooks/useFullReport";
+import { useFullReport, useFreeFullReport } from "@/lib/hooks/useFullReport";
 
 export default function FullReport() {
   const { email, payPowerScore, answers, userSelectionId } =
@@ -36,8 +37,14 @@ export default function FullReport() {
   const effectiveScore =
     (payPowerScore ?? 0) > 100 ? 100 : (payPowerScore ?? 0);
   const { data: apiResponse, isLoading } = useFullReport(effectiveScore);
+  const { data: freeReportData } = useFreeFullReport(effectiveScore);
 
   const fullReport = apiResponse?.data;
+  // AI-generated description from the free report endpoint (same as shown in the modal)
+  const aiDescription = freeReportData?.data?.description;
+  const aiParagraphs: string[] = aiDescription
+    ? aiDescription.split(/\n+/).filter((p: string) => p.trim())
+    : [];
 
   useEffect(() => {
     // Countdown timer
@@ -358,6 +365,38 @@ export default function FullReport() {
                         </div>
                       </div>
                     </motion.div>
+
+                    {/* AI-Generated Career Insight (from free report API) */}
+                    {aiParagraphs.length > 0 && (
+                      <motion.div className="bg-white rounded-3xl shadow-xl mb-8 border-2 border-purple-200 overflow-hidden">
+                        <div className="flex items-center gap-3 p-8 pb-0">
+                          <div className="p-3 bg-purple-100 rounded-xl">
+                            <Sparkles className="w-6 h-6 text-purple-600" />
+                          </div>
+                          <h2 className="text-xl font-bold text-gray-800">
+                            🤖 AI-Generated Career Insight
+                          </h2>
+                        </div>
+                        {/* AI badge banner */}
+                        <div className="flex items-center gap-2 mx-8 mt-4 bg-purple-50 border border-purple-200 rounded-xl px-4 py-2.5">
+                          <Sparkles className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                          <p className="text-xs text-purple-600 font-medium">
+                            The following insight is automatically generated
+                            using AI based on your answers and career inputs.
+                          </p>
+                        </div>
+                        <div className="p-8 pt-4 space-y-4">
+                          {aiParagraphs.map((para: string, idx: number) => (
+                            <p
+                              key={idx}
+                              className="text-gray-700 leading-relaxed text-base"
+                            >
+                              {para}
+                            </p>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
 
                     {/* Uncomfortable Truth / What This Means */}
                     <motion.div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
