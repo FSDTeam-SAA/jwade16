@@ -441,7 +441,7 @@ function ScoreContent() {
                   <Lock className="w-5 h-5" />
                   Book Strategy Session
                 </span>
-                <span
+                {/* <span
                   className={`px-2 py-0.5 rounded text-sm font-medium border ${
                     isAccepted
                       ? 'bg-teal-50 text-teal-700 border-teal-100'
@@ -449,7 +449,7 @@ function ScoreContent() {
                   }`}
                 >
                   $497
-                </span>
+                </span> */}
                 <ArrowRight
                   className={`w-4 h-4 transition-colors ${
                     isAccepted
