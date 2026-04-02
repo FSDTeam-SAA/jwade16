@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   TrendingUp,
@@ -7,119 +7,100 @@ import {
   ArrowRight,
   Shield,
   FileText,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { toast } from "sonner";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import { useQuestionnaireStore } from "@/store/useQuestionnaireStore";
-import { usePostCheckoutSession } from "@/lib/hooks/useCheckout";
-import Link from "next/link";
-import ContributionModal from "@/components/website/ContributionModal";
-import FreeReportModal from "@/components/website/FreeReportModal";
-import { useFreeFullReport } from "@/lib/hooks/useFullReport";
+} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useQuestionnaireStore } from '@/store/useQuestionnaireStore'
+import { usePostCheckoutSession } from '@/lib/hooks/useCheckout'
+import Link from 'next/link'
+import ContributionModal from '@/components/website/ContributionModal'
+import FreeReportModal from '@/components/website/FreeReportModal'
+import { useFreeFullReport } from '@/lib/hooks/useFullReport'
 
 function ScoreContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const searchParamEmail = searchParams.get("email");
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const searchParamEmail = searchParams.get('email')
   const {
     email: storeEmail,
     setEmail,
     payPowerScore,
     marketGapDetected,
     userSelectionId,
-  } = useQuestionnaireStore();
-  const checkoutMutation = usePostCheckoutSession();
+  } = useQuestionnaireStore()
+  const checkoutMutation = usePostCheckoutSession()
 
-  const email = searchParamEmail || storeEmail;
+  const email = searchParamEmail || storeEmail
 
-  const [isAccepted, setIsAccepted] = useState(false);
-  const [showFreeReport, setShowFreeReport] = useState(false);
+  const [isAccepted, setIsAccepted] = useState(false)
+  const [showFreeReport, setShowFreeReport] = useState(false)
 
   useEffect(() => {
     // 1. If we have email in store but NOT in URL, update URL
     if (storeEmail && !searchParamEmail) {
-      const newParams = new URLSearchParams(searchParams.toString());
-      newParams.set("email", storeEmail);
-      router.replace(`?${newParams.toString()}`);
+      const newParams = new URLSearchParams(searchParams.toString())
+      newParams.set('email', storeEmail)
+      router.replace(`?${newParams.toString()}`)
     }
     // 2. If we have email in URL but NOT in store (or mismatch), sync to store
     else if (searchParamEmail && searchParamEmail !== storeEmail) {
-      setEmail(searchParamEmail);
+      setEmail(searchParamEmail)
     }
-  }, [storeEmail, searchParamEmail, router, searchParams, setEmail]);
+  }, [storeEmail, searchParamEmail, router, searchParams, setEmail])
 
   // Use store data or fallback to 0/empty
-  const score = payPowerScore ?? 0;
+  const score = payPowerScore ?? 0
 
   // If undefined/null, default to 0
-  let belowMarket = 0;
+  let belowMarket = 0
   if (marketGapDetected) {
-    const match = marketGapDetected.match(/(\d+)%/);
-    if (match && match[1]) {
-      belowMarket = parseInt(match[1], 10);
+    const match = /(\d+)%/.exec(marketGapDetected)
+    if (match?.[1]) {
+      belowMarket = Number.parseInt(match[1], 10)
     }
   }
 
   const handleFullReport = () => {
-    if (!isAccepted) return;
+    if (!isAccepted) return
     checkoutMutation.mutate(
       {
         userId: userSelectionId,
         totalAmount: 39,
-        paymentType: "fullReport",
+        paymentType: 'fullReport',
       },
       {
         onSuccess: (data) => {
           if (data?.checkoutUrl) {
-            window.location.href = data.checkoutUrl;
+            globalThis.location.href = data.checkoutUrl
           }
         },
         onError: (error) => {
-          toast.error("Failed to create checkout session");
-          console.error("Checkout error:", error);
+          toast.error('Failed to create checkout session')
+          console.error('Checkout error:', error)
         },
       },
-    );
-  };
+    )
+  }
 
+  // Redirects accepted users to the Calendly booking page.
   const handleSession = () => {
-    if (!isAccepted) return;
-    checkoutMutation.mutate(
-      {
-        userId: userSelectionId,
-        totalAmount: 497,
-        paymentType: "bookSeason",
-      },
-      {
-        onSuccess: (data) => {
-          if (data?.checkoutUrl) {
-            window.location.href = data.checkoutUrl;
-          }
-        },
-        onError: (error) => {
-          toast.error("Failed to create checkout session");
-          console.error("Checkout error:", error);
-        },
-      },
-    );
-  };
+    if (!isAccepted) return
+    globalThis.location.href = 'https://calendly.com/companionpayy'
+  }
 
+  const { data } = useFreeFullReport(payPowerScore ?? 0)
 
-    // const { payPowerScore } = useQuestionnaireStore();
-    const { data, isLoading, isError } = useFreeFullReport(payPowerScore ?? 0);
-  
-    const reportData = data?.data;
-    // const score = reportData?.score ?? payPowerScore ?? 0;
-  
-    let marketPositionValue = "Action Required";
-    if (score > 70) marketPositionValue = "Strong";
-    else if (score > 40) marketPositionValue = "Moderate";
-  
-    const marketPosition = reportData?.headline || marketPositionValue;
+  const reportData = data?.data
 
-    // console.log(marketPosition)
+  let marketPositionValue = 'Action Required'
+  if (score > 70) marketPositionValue = 'Strong'
+  else if (score > 40) marketPositionValue = 'Moderate'
+
+  const marketPosition = reportData?.headline || marketPositionValue
+
+  // console.log(marketPosition)
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#005DAA]/10 to-[#00C8B3]/10 overflow-hidden p-4 relative">
@@ -195,7 +176,7 @@ function ScoreContent() {
                 <motion.circle
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: score / 100 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  transition={{ duration: 1.5, ease: 'easeOut' }}
                   cx="112"
                   cy="112"
                   r="100"
@@ -223,7 +204,7 @@ function ScoreContent() {
                 <motion.span
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.5, type: "spring" }}
+                  transition={{ delay: 0.5, type: 'spring' }}
                   className="text-5xl font-black bg-linear-to-r from-[#005DAA] to-[#00C8B3] text-transparent bg-clip-text"
                 >
                   {score}
@@ -254,7 +235,7 @@ function ScoreContent() {
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
                     Based on your role and location, your contributions may not
-                    be fully recognized{" "}
+                    be fully recognized{' '}
                     {/* <span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">
                       ${moneyLeft}k per year
                     </span> */}
@@ -282,10 +263,10 @@ function ScoreContent() {
                     Competitive Compensation Detected
                   </h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Great news! Your compensation appears to be{" "}
+                    Great news! Your compensation appears to be{' '}
                     <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                       at or above market rates
-                    </span>{" "}
+                    </span>{' '}
                     for your role and location.
                   </p>
                 </div>
@@ -303,27 +284,27 @@ function ScoreContent() {
             {[
               {
                 icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
-                title: "Market Analysis",
-                desc: "Detailed compensation comparison.",
-                color: "bg-blue-50",
+                title: 'Market Analysis',
+                desc: 'Detailed compensation comparison.',
+                color: 'bg-blue-50',
               },
               {
                 icon: <Shield className="w-5 h-5 text-teal-500" />,
-                title: "Negotiation Assessment",
-                desc: "Identify your leverage points.",
-                color: "bg-teal-50",
+                title: 'Negotiation Assessment',
+                desc: 'Identify your leverage points.',
+                color: 'bg-teal-50',
               },
               {
                 icon: <CheckCircle className="w-5 h-5 text-indigo-500" />,
-                title: "Action Plan",
-                desc: "90-day roadmap to fair pay.",
-                color: "bg-indigo-50",
+                title: 'Action Plan',
+                desc: '90-day roadmap to fair pay.',
+                color: 'bg-indigo-50',
               },
               {
                 icon: <FileText className="w-5 h-5 text-purple-500" />,
-                title: "Scripts & Templates",
-                desc: "Exact words to use.",
-                color: "bg-purple-50",
+                title: 'Scripts & Templates',
+                desc: 'Exact words to use.',
+                color: 'bg-purple-50',
               },
             ].map((item, idx) => (
               <motion.div
@@ -384,14 +365,14 @@ function ScoreContent() {
               <span className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium group-hover:text-gray-900 transition-colors">
                 I understand this is paid advisory, not legal, tax, or financial
                 advice. I acknowledge that COMPanion Pay LLC does not guarantee
-                compensation outcomes. I agree to the{" "}
+                compensation outcomes. I agree to the{' '}
                 <Link
                   href="/terms-conditions"
                   className="text-[#005DAA] border-b border-[#005DAA]/20 hover:border-[#005DAA] transition-all"
                 >
                   Terms & Conditions
-                </Link>{" "}
-                and{" "}
+                </Link>{' '}
+                and{' '}
                 <Link
                   href="/terms-conditions"
                   className="text-[#005DAA] border-b border-[#005DAA]/20 hover:border-[#005DAA] transition-all"
@@ -415,15 +396,15 @@ function ScoreContent() {
               disabled={!isAccepted}
               className={`relative group overflow-hidden p-1 rounded-xl shadow-lg transition-all ${
                 isAccepted
-                  ? "bg-[#005DAA] cursor-pointer hover:shadow-xl"
-                  : "bg-gray-400 cursor-not-allowed opacity-60"
+                  ? 'bg-[#005DAA] cursor-pointer hover:shadow-xl'
+                  : 'bg-gray-400 cursor-not-allowed opacity-60'
               }`}
             >
               <div
                 className={`absolute inset-0 bg-linear-to-r from-[#005DAA] to-[#0088cc] transition-opacity ${
                   isAccepted
-                    ? "opacity-100 group-hover:opacity-90"
-                    : "opacity-0"
+                    ? 'opacity-100 group-hover:opacity-90'
+                    : 'opacity-0'
                 }`}
               />
               <div className="relative bg-white/10 backdrop-blur-sm h-full rounded-[10px] py-4 px-6 flex items-center justify-center gap-3 transition-colors group-hover:bg-transparent text-white">
@@ -440,21 +421,21 @@ function ScoreContent() {
               disabled={!isAccepted}
               className={`relative group overflow-hidden p-1 rounded-xl shadow-md transition-all border ${
                 isAccepted
-                  ? "bg-white text-gray-800 cursor-pointer hover:shadow-xl border-teal-100"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                  ? 'bg-white text-gray-800 cursor-pointer hover:shadow-xl border-teal-100'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
               }`}
             >
               <div
                 className={`absolute inset-0 bg-linear-to-r from-[#00C8B3] to-[#00E5CC] transition-opacity ${
-                  isAccepted ? "opacity-0 group-hover:opacity-10" : "opacity-0"
+                  isAccepted ? 'opacity-0 group-hover:opacity-10' : 'opacity-0'
                 }`}
               />
               <div className="relative h-full rounded-[10px] py-4 px-6 flex items-center justify-center gap-3">
                 <span
                   className={`font-semibold transition-colors flex items-center gap-2 ${
                     isAccepted
-                      ? "text-gray-700 group-hover:text-teal-700 font-bold"
-                      : "text-gray-400"
+                      ? 'text-gray-700 group-hover:text-teal-700 font-bold'
+                      : 'text-gray-400'
                   }`}
                 >
                   <Lock className="w-5 h-5" />
@@ -463,8 +444,8 @@ function ScoreContent() {
                 <span
                   className={`px-2 py-0.5 rounded text-sm font-medium border ${
                     isAccepted
-                      ? "bg-teal-50 text-teal-700 border-teal-100"
-                      : "bg-gray-200 text-gray-400 border-gray-300"
+                      ? 'bg-teal-50 text-teal-700 border-teal-100'
+                      : 'bg-gray-200 text-gray-400 border-gray-300'
                   }`}
                 >
                   $497
@@ -472,8 +453,8 @@ function ScoreContent() {
                 <ArrowRight
                   className={`w-4 h-4 transition-colors ${
                     isAccepted
-                      ? "text-gray-400 group-hover:text-teal-500"
-                      : "text-gray-300"
+                      ? 'text-gray-400 group-hover:text-teal-500'
+                      : 'text-gray-300'
                   }`}
                 />
               </div>
@@ -507,7 +488,7 @@ function ScoreContent() {
       <ContributionModal delay={0} />
       <FreeReportModal open={showFreeReport} onOpenChange={setShowFreeReport} />
     </div>
-  );
+  )
 }
 
 export default function ScorePage() {
@@ -515,5 +496,5 @@ export default function ScorePage() {
     <Suspense fallback={<div>Loading...</div>}>
       <ScoreContent />
     </Suspense>
-  );
+  )
 }
